@@ -13,11 +13,11 @@ export default function ContactoPage() {
       <div className="space-y-6">
         <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
           <h3 className="font-semibold text-slate-800">Email</h3>
-          <a href="mailto:ventas@asantec.cl" className="text-sky-600 hover:underline">ventas@asantec.cl</a>
+          <a href="mailto:jorge.rodriguez@asantec.cl" className="text-sky-600 hover:underline">jorge.rodriguez@asantec.cl</a>
         </div>
         <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
           <h3 className="font-semibold text-slate-800">Teléfono</h3>
-          <a href="tel:+56912345678" className="text-sky-600 hover:underline">+56 9 1234 5678</a>
+          <a href="tel:+56998661395" className="text-sky-600 hover:underline">+56 9 9866 1395</a>
         </div>
         <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
           <h3 className="font-semibold text-slate-800">Alcance</h3>
