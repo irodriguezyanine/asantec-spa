@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
 import { useSession } from "next-auth/react"
-import { Menu, X, ShoppingCart, Search, Shield } from "lucide-react"
+import { Menu, X, LogIn, Search, Shield } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { categories } from "@/data/products"
 
@@ -88,9 +88,25 @@ export function Header() {
             >
               <Search className="w-5 h-5" />
             </button>
-            <button className="p-2 rounded-lg text-slate-600 hover:bg-slate-100" aria-label="Carrito">
-              <ShoppingCart className="w-5 h-5" />
-            </button>
+            {session ? (
+              <Link
+                href="/admin"
+                className="p-2 rounded-lg text-amber-600 hover:bg-amber-50 flex items-center gap-1.5"
+                aria-label="Panel administrador"
+              >
+                <Shield className="w-5 h-5" />
+                <span className="text-sm font-medium hidden sm:inline">Admin</span>
+              </Link>
+            ) : (
+              <Link
+                href="/admin/login"
+                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 flex items-center gap-1.5"
+                aria-label="Iniciar sesión como administrador"
+              >
+                <LogIn className="w-5 h-5" />
+                <span className="text-sm font-medium hidden sm:inline">Admin</span>
+              </Link>
+            )}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"

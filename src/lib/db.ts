@@ -1,34 +1,35 @@
 import { MongoClient, Db } from "mongodb"
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Por favor agrega MONGODB_URI a tu archivo .env.local')
-}
-
-const uri = process.env.MONGODB_URI
-const options = {}
-
-let client: MongoClient
-let clientPromise: Promise<MongoClient>
+let clientPromise: Promise<MongoClient> | null = null
 
 declare global {
   // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined
 }
 
-if (process.env.NODE_ENV === 'development') {
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options)
-    global._mongoClientPromise = client.connect()
+function getClientPromise(): Promise<MongoClient> {
+  const uri = process.env.MONGODB_URI
+  if (!uri) {
+    throw new Error("Por favor agrega MONGODB_URI a tu archivo .env.local")
   }
-  clientPromise = global._mongoClientPromise
-} else {
-  client = new MongoClient(uri, options)
-  clientPromise = client.connect()
+
+  if (process.env.NODE_ENV === "development" && global._mongoClientPromise) {
+    return global._mongoClientPromise
+  }
+
+  const promise = new MongoClient(uri).connect()
+  if (process.env.NODE_ENV === "development") {
+    global._mongoClientPromise = promise
+  }
+  return promise
 }
 
 export async function getDb(): Promise<Db> {
+  if (!clientPromise) {
+    clientPromise = getClientPromise()
+  }
   const client = await clientPromise
-  return client.db('asantec')
+  return client.db("asantec")
 }
 
-export default clientPromise
+export { getDb }
