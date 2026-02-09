@@ -2,7 +2,14 @@ import Link from "next/link"
 
 export function Hero() {
   return (
-    <section className="relative bg-gradient-to-br from-sky-600 via-sky-700 to-slate-800 text-white overflow-hidden">
+    <section className="relative text-white overflow-hidden">
+      {/* Imagen de fondo */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/Fondo.png')" }}
+      />
+      {/* Overlay azul semitransparente - permite ver la imagen desvanecida detrás */}
+      <div className="absolute inset-0 bg-gradient-to-br from-sky-600/85 via-sky-700/88 to-slate-800/92" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.08)_0%,transparent_50%)]" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
         <div className="max-w-2xl">
