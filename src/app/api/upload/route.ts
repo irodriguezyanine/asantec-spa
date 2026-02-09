@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
-import { writeFile, mkdir } from "fs/promises"
-import path from "path"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { cloudinary } from "@/lib/cloudinary"
 
 export async function POST(request: Request) {
   try {
@@ -26,23 +25,35 @@ export async function POST(request: Request) {
       )
     }
 
+    if (
+      !process.env.CLOUDINARY_CLOUD_NAME ||
+      !process.env.CLOUDINARY_API_KEY ||
+      !process.env.CLOUDINARY_API_SECRET
+    ) {
+      return NextResponse.json(
+        { error: "Cloudinary no está configurado. Revisa las variables de entorno." },
+        { status: 500 }
+      )
+    }
+
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    const base64 = `data:${file.type};base64,${buffer.toString("base64")}`
 
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_")
-    const timestamp = Date.now()
-    const filename = `${timestamp}-${sanitizedName}`
+    const result = await cloudinary.uploader.upload(base64, {
+      folder: "asantec/productos",
+      resource_type: "image",
+    })
 
-    const publicDir = path.join(process.cwd(), "public", "products")
-    await mkdir(publicDir, { recursive: true })
-
-    const filepath = path.join(publicDir, filename)
-    await writeFile(filepath, buffer)
-
-    const url = `/products/${filename}`
-    return NextResponse.json({ url })
+    return NextResponse.json({
+      url: result.secure_url,
+      publicId: result.public_id,
+    })
   } catch (error) {
     console.error("Error al subir archivo:", error)
-    return NextResponse.json({ error: "Error al subir la imagen" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Error al subir la imagen. Verifica la configuración de Cloudinary." },
+      { status: 500 }
+    )
   }
 }
