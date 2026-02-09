@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState } from "react"
 import { Menu, X, ShoppingCart, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -9,14 +10,30 @@ import { categories } from "@/data/products"
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [logoError, setLogoError] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <span className="text-2xl font-bold text-sky-600">ASANTEC</span>
-            <span className="text-slate-500 text-sm hidden sm:inline">SPA</span>
+          <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="ASANTEC - Volver al inicio">
+            {logoError ? (
+              <>
+                <span className="text-2xl font-bold text-sky-600">ASANTEC</span>
+                <span className="text-slate-500 text-sm hidden sm:inline">SPA</span>
+              </>
+            ) : (
+              <Image
+                src="/logo.png"
+                alt="ASANTEC Servicio y Tecnología"
+                width={180}
+                height={44}
+                className="h-10 w-auto object-contain"
+                priority
+                unoptimized
+                onError={() => setLogoError(true)}
+              />
+            )}
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
