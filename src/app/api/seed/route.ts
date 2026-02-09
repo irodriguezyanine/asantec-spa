@@ -71,8 +71,17 @@ async function seed() {
     })
   } catch (error) {
     console.error("Error al ejecutar seed:", error)
+    const msg = error instanceof Error ? error.message : "Error desconocido"
+    const hint =
+      !process.env.MONGODB_URI
+        ? "MONGODB_URI no está configurada en Vercel."
+        : msg.includes("ENOTFOUND") || msg.includes("getaddrinfo")
+          ? "No se puede conectar a MongoDB. En Atlas: Network Access → Add IP Address → Allow Access from Anywhere (0.0.0.0/0)."
+          : msg.includes("auth") || msg.includes("Authentication")
+            ? "Usuario o contraseña de MongoDB incorrectos. Verifica MONGODB_URI."
+            : "Revisa MONGODB_URI y el acceso de red en MongoDB Atlas."
     return NextResponse.json(
-      { error: "Error al inicializar la base de datos" },
+      { error: "Error al inicializar la base de datos", hint, detail: msg },
       { status: 500 }
     )
   }
