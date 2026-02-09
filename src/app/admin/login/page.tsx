@@ -12,7 +12,7 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/admin"
+  const callbackUrl = searchParams.get("callbackUrl") || "/"
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

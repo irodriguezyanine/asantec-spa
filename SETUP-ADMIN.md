@@ -18,6 +18,7 @@ NEXTAUTH_URL=http://localhost:3000
 
 - **MONGODB_URI**: Copia la URI desde MongoDB Atlas (Connect → Drivers)
 - **NEXTAUTH_SECRET**: Genera una con `openssl rand -base64 32` o cualquier string aleatorio largo
+- **NEXTAUTH_URL**: En producción (Vercel) debe ser exactamente `https://asantec.vercel.app` (sin barra final). Si está mal, el login fallará.
 
 ## 3. Inicializar la base de datos
 

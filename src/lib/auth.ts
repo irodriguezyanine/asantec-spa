@@ -24,7 +24,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user._id.toString(),
           name: user.username,
-          email: user.username + "@asantec.local",
+          email: user.username.includes("@") ? user.username : user.username + "@asantec.local",
         }
       },
     }),
