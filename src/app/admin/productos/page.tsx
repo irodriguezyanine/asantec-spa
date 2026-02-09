@@ -166,6 +166,7 @@ function ProductForm({
   const [image, setImage] = useState(product?.image ?? "")
   const [featured, setFeatured] = useState(product?.featured ?? false)
   const [inStock, setInStock] = useState(product?.inStock ?? true)
+  const [visible, setVisible] = useState(product?.visible !== false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
 
@@ -200,6 +201,7 @@ function ProductForm({
         image,
         featured,
         inStock,
+        visible,
       }
 
       const url = product ? `/api/products/${product.id}` : "/api/products"
@@ -341,6 +343,14 @@ function ProductForm({
                   onChange={(e) => setInStock(e.target.checked)}
                 />
                 <span className="text-sm">En stock</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={visible}
+                  onChange={(e) => setVisible(e.target.checked)}
+                />
+                <span className="text-sm">Visible en catálogo</span>
               </label>
             </div>
 
