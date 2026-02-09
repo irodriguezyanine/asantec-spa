@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
+import bcrypt from "bcryptjs"
 import { getDb } from "@/lib/db"
 import { categories, products } from "@/data/products"
 
+const ADMIN_USER = "jorgeignaciorb@gmail.com"
+const ADMIN_PASSWORD = "Patan123"
+
 /**
- * Migra productos y categorías del archivo estático a MongoDB.
+ * Migra productos, categorías y crea el usuario administrador en MongoDB.
  * Ejecuta una vez: GET /api/seed (o POST)
  */
 export async function GET() {
@@ -17,6 +21,18 @@ export async function POST() {
 async function seed() {
   try {
     const db = await getDb()
+
+    const usersCollection = db.collection("users")
+    const existingAdmin = await usersCollection.findOne({ username: ADMIN_USER })
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 12)
+      await usersCollection.insertOne({
+        username: ADMIN_USER,
+        password: hashedPassword,
+        role: "admin",
+        createdAt: new Date(),
+      })
+    }
 
     const catsCollection = db.collection("categories")
     const existingCats = await catsCollection.countDocuments()
@@ -51,7 +67,7 @@ async function seed() {
 
     return NextResponse.json({
       success: true,
-      message: "Base de datos inicializada. Categorías y productos migrados.",
+      message: "Base de datos inicializada. Usuario admin, categorías y productos migrados.",
     })
   } catch (error) {
     console.error("Error al ejecutar seed:", error)

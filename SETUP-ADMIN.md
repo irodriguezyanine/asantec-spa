@@ -26,13 +26,13 @@ NEXTAUTH_URL=http://localhost:3000
    - Abre en el navegador: `http://localhost:3000/api/seed`
    - O ejecuta: `curl http://localhost:3000/api/seed` (con el servidor corriendo)
 
-## 4. Crear el primer administrador
+## 4. Usuario administrador
 
-1. Ve a `http://localhost:3000/admin/login`
-2. Haz clic en "Crear primer administrador"
-3. Ingresa usuario y contraseña (mínimo 6 caracteres)
-4. Haz clic en "Crear usuario"
-5. Luego inicia sesión con esas credenciales
+El usuario admin se crea automáticamente al ejecutar el seed:
+- **Usuario:** jorgeignaciorb@gmail.com
+- **Contraseña:** Patan123
+
+No se pueden crear nuevos usuarios; solo este administrador puede iniciar sesión.
 
 ## 5. Usar el panel admin
 
