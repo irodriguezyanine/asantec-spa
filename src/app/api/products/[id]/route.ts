@@ -20,6 +20,7 @@ function formatProduct(doc: Record<string, unknown>): Product {
     images: doc.images as string[] | undefined,
     featured: doc.featured as boolean | undefined,
     inStock: doc.inStock as boolean | undefined,
+    visible: doc.visible as boolean | undefined,
     specs: doc.specs as Record<string, string> | undefined,
   }
 }
@@ -69,7 +70,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { name, brand, category, categorySlug, description, price, image, images, featured, inStock } = body
+    const { name, brand, category, categorySlug, description, price, image, images, featured, inStock, visible } = body
 
     const db = await getDb()
     const collection = db.collection("products")
@@ -85,6 +86,7 @@ export async function PUT(
     if (images !== undefined) update.images = images
     if (featured !== undefined) update.featured = Boolean(featured)
     if (inStock !== undefined) update.inStock = inStock
+    if (visible !== undefined) update.visible = Boolean(visible)
 
     const result = await collection.findOneAndUpdate(
       { _id: new ObjectId(id) },

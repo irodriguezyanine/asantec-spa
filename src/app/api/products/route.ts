@@ -19,6 +19,7 @@ function formatProduct(doc: Record<string, unknown>): Product {
     images: doc.images as string[] | undefined,
     featured: doc.featured as boolean | undefined,
     inStock: doc.inStock as boolean | undefined,
+    visible: doc.visible as boolean | undefined,
     specs: doc.specs as Record<string, string> | undefined,
   }
 }
@@ -34,7 +35,12 @@ export async function GET(request: Request) {
     const collection = db.collection("products")
 
     if (slug) {
-      const doc = await collection.findOne({ slug })
+      const admin = searchParams.get("admin")
+      const query: Record<string, unknown> = { slug }
+      if (admin !== "true") {
+        query.$or = [{ visible: { $ne: false } }, { visible: { $exists: false } }]
+      }
+      const doc = await collection.findOne(query)
       if (!doc) return NextResponse.json({ error: "Producto no encontrado" }, { status: 404 })
       return NextResponse.json(formatProduct(doc))
     }
@@ -42,6 +48,10 @@ export async function GET(request: Request) {
     let query: Record<string, unknown> = {}
     if (categorySlug) query.categorySlug = categorySlug
     if (featured === "true") query.featured = true
+    const admin = searchParams.get("admin")
+    if (admin !== "true") {
+      query.$or = [{ visible: { $ne: false } }, { visible: { $exists: false } }]
+    }
 
     const docs = await collection.find(query).toArray()
     const products = docs.map(formatProduct)
@@ -88,6 +98,7 @@ export async function POST(request: Request) {
       images: images || [],
       featured: Boolean(featured),
       inStock: inStock !== false,
+      visible: body.visible !== false,
       createdAt: new Date(),
     }
 

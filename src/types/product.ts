@@ -12,6 +12,7 @@ export interface Product {
   images?: string[]
   featured?: boolean
   inStock?: boolean
+  visible?: boolean
   specs?: Record<string, string>
 }
 

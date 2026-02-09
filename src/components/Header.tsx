@@ -66,9 +66,15 @@ export function Header() {
             <Link href="/nosotros" className="text-slate-700 hover:text-sky-600 font-medium transition">
               Nosotros
             </Link>
-            <Link href="/contacto" className="text-slate-700 hover:text-sky-600 font-medium transition">
-              Contacto
-            </Link>
+            {session ? (
+              <Link href="/admin/inventario" className="text-slate-700 hover:text-sky-600 font-medium transition">
+                Inventario
+              </Link>
+            ) : (
+              <Link href="/contacto" className="text-slate-700 hover:text-sky-600 font-medium transition">
+                Contacto
+              </Link>
+            )}
             {session && (
               <Link
                 href="/admin"
@@ -155,9 +161,15 @@ export function Header() {
             <Link href="/nosotros" className="py-2 text-slate-700" onClick={() => setMenuOpen(false)}>
               Nosotros
             </Link>
-            <Link href="/contacto" className="py-2 text-slate-700" onClick={() => setMenuOpen(false)}>
-              Contacto
-            </Link>
+            {session ? (
+              <Link href="/admin/inventario" className="py-2 text-slate-700" onClick={() => setMenuOpen(false)}>
+                Inventario
+              </Link>
+            ) : (
+              <Link href="/contacto" className="py-2 text-slate-700" onClick={() => setMenuOpen(false)}>
+                Contacto
+              </Link>
+            )}
             {session && (
               <Link
                 href="/admin"
