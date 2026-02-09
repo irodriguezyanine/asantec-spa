@@ -3,11 +3,13 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
-import { Menu, X, ShoppingCart, Search } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { Menu, X, ShoppingCart, Search, Shield } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { categories } from "@/data/products"
 
 export function Header() {
+  const { data: session } = useSession()
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [logoError, setLogoError] = useState(false)
@@ -67,6 +69,15 @@ export function Header() {
             <Link href="/contacto" className="text-slate-700 hover:text-sky-600 font-medium transition">
               Contacto
             </Link>
+            {session && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-1 text-amber-600 hover:text-amber-700 font-medium transition"
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -131,6 +142,16 @@ export function Header() {
             <Link href="/contacto" className="py-2 text-slate-700" onClick={() => setMenuOpen(false)}>
               Contacto
             </Link>
+            {session && (
+              <Link
+                href="/admin"
+                className="py-2 flex items-center gap-2 text-amber-600 font-medium"
+                onClick={() => setMenuOpen(false)}
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </Link>
+            )}
           </nav>
         </div>
       </div>

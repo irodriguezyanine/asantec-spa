@@ -4,6 +4,7 @@ import "./globals.css"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { WhatsAppButton } from "@/components/WhatsAppButton"
+import { SessionProvider } from "@/components/SessionProvider"
 
 const inter = Inter({
   variable: "--font-sans",
@@ -32,10 +33,12 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}>
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <WhatsAppButton />
+        <SessionProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <WhatsAppButton />
+        </SessionProvider>
       </body>
     </html>
   )

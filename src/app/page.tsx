@@ -1,11 +1,12 @@
 import { Hero } from "@/components/Hero"
 import { CategoryCard } from "@/components/CategoryCard"
 import { ProductCard } from "@/components/ProductCard"
-import { categories, getFeaturedProducts } from "@/data/products"
+import { categories } from "@/data/products"
+import { getFeaturedProductsSafe } from "@/lib/products"
 import Link from "next/link"
 
-export default function HomePage() {
-  const featured = getFeaturedProducts()
+export default async function HomePage() {
+  const featured = await getFeaturedProductsSafe()
 
   return (
     <>

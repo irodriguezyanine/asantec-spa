@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ProductCard } from "@/components/ProductCard"
-import { categories, getProductsByCategory } from "@/data/products"
+import { categories } from "@/data/products"
+import { getProductsByCategorySafe } from "@/lib/products"
 
 interface PageProps {
   params: Promise<{ categoria: string }>
@@ -26,7 +27,7 @@ export default async function CategoriaPage({ params }: PageProps) {
   const cat = categories.find((c) => c.slug === categoria)
   if (!cat) notFound()
 
-  const items = getProductsByCategory(categoria)
+  const items = await getProductsByCategorySafe(categoria)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">

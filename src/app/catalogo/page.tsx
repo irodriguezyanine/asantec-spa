@@ -1,12 +1,13 @@
 import { ProductCard } from "@/components/ProductCard"
-import { products } from "@/data/products"
+import { getProducts } from "@/lib/products"
 
 export const metadata = {
   title: "Catálogo | ASANTEC SPA",
   description: "Catálogo de productos tecnológicos: computadores, monitores, periféricos, impresoras y más.",
 }
 
-export default function CatalogoPage() {
+export default async function CatalogoPage() {
+  const products = await getProducts()
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <h1 className="text-3xl font-bold text-slate-800 mb-2">Catálogo de productos</h1>

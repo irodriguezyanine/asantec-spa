@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { getProductBySlug } from "@/data/products"
+import Image from "next/image"
+import { getProductBySlugSafe } from "@/lib/products"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -8,7 +9,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params
-  const product = getProductBySlug(slug)
+  const product = await getProductBySlugSafe(slug)
   if (!product) return { title: "Producto | ASANTEC SPA" }
   return {
     title: `${product.name} | ASANTEC SPA`,
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ProductoPage({ params }: PageProps) {
   const { slug } = await params
-  const product = getProductBySlug(slug)
+  const product = await getProductBySlugSafe(slug)
   if (!product) notFound()
 
   return (
@@ -33,14 +34,26 @@ export default async function ProductoPage({ params }: PageProps) {
         <span className="text-slate-800 line-clamp-1">{product.name}</span>
       </nav>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="aspect-square bg-slate-100 rounded-xl flex items-center justify-center text-8xl">
-          {product.categorySlug === "computadores" && "💻"}
-          {product.categorySlug === "monitores" && "🖥️"}
-          {product.categorySlug === "perifericos" && "⌨️"}
-          {product.categorySlug === "impresoras" && "🖨️"}
-          {product.categorySlug === "almacenamiento" && "💾"}
-          {product.categorySlug === "red-y-conectividad" && "🔌"}
-          {!["computadores", "monitores", "perifericos", "impresoras", "almacenamiento", "red-y-conectividad"].includes(product.categorySlug) && "📦"}
+        <div className="aspect-square bg-slate-100 rounded-xl overflow-hidden relative flex items-center justify-center">
+          {product.image && (product.image.startsWith("http") || product.image.startsWith("/")) ? (
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className="object-contain p-4"
+              sizes="(max-width: 1024px) 50vw, 40vw"
+            />
+          ) : (
+            <span className="text-8xl">
+              {product.categorySlug === "computadores" && "💻"}
+              {product.categorySlug === "monitores" && "🖥️"}
+              {product.categorySlug === "perifericos" && "⌨️"}
+              {product.categorySlug === "impresoras" && "🖨️"}
+              {product.categorySlug === "almacenamiento" && "💾"}
+              {product.categorySlug === "red-y-conectividad" && "🔌"}
+              {!["computadores", "monitores", "perifericos", "impresoras", "almacenamiento", "red-y-conectividad"].includes(product.categorySlug) && "📦"}
+            </span>
+          )}
         </div>
         <div>
           <p className="text-sky-600 font-semibold uppercase tracking-wide">{product.brand}</p>
