@@ -66,9 +66,13 @@ export async function POST(request: Request) {
     const categoryMap = new Map<string, { name: string; slug: string }>()
     const catDocs = await categoriesCollection.find({}).toArray()
     for (const c of catDocs) {
-      const doc = c as { slug: string; name: string }
-      categoryMap.set(doc.slug.toLowerCase(), { name: doc.name, slug: doc.slug })
-      categoryMap.set(doc.name.toLowerCase(), { name: doc.name, slug: doc.slug })
+      const doc = c as Record<string, unknown>
+      const slug = String(doc?.slug ?? "")
+      const name = String(doc?.name ?? "")
+      if (slug && name) {
+        categoryMap.set(slug.toLowerCase(), { name, slug })
+        categoryMap.set(name.toLowerCase(), { name, slug })
+      }
     }
 
     let imported = 0

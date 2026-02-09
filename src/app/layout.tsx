@@ -23,6 +23,10 @@ export const metadata: Metadata = {
     "soluciones informáticas",
     "ASANTEC",
   ],
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 }
 
 export default function RootLayout({
