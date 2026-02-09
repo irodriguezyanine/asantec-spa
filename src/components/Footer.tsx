@@ -36,11 +36,11 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-sky-400 shrink-0" />
-                <a href="mailto:ventas@asantec.cl" className="hover:text-sky-400 transition">ventas@asantec.cl</a>
+                <a href="mailto:jorge.rodriguez@asantec.cl" className="hover:text-sky-400 transition">jorge.rodriguez@asantec.cl</a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-sky-400 shrink-0" />
-                <a href="tel:+56912345678" className="hover:text-sky-400 transition">+56 9 1234 5678</a>
+                <a href="tel:+56998661395" className="hover:text-sky-400 transition">+56 9 9866 1395</a>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
