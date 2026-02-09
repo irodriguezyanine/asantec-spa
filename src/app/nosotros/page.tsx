@@ -37,7 +37,7 @@ export default function NosotrosPage() {
         <div className="flex flex-col sm:flex-row items-center gap-6">
           <div className="relative h-48 w-48 shrink-0 overflow-hidden rounded-2xl bg-slate-100">
             <img
-              src="/gerente-general.png"
+              src="/GerentegeneralASANTEC.png"
               alt="Jorge Ignacio Rodríguez Bonilla - Gerente General ASANTEC"
               className="h-full w-full object-cover"
             />
