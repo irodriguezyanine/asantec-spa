@@ -2,22 +2,16 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import {
   Upload,
   Download,
   Package,
   FolderTree,
-  Eye,
-  EyeOff,
-  Star,
-  Pencil,
-  Trash2,
   Plus,
   X,
-  Globe,
 } from "lucide-react"
 import type { Product } from "@/types/product"
+import { AdminProductTable, type SortColumn, type SortDirection } from "@/components/AdminProductTable"
 
 interface Category {
   id: string
@@ -32,6 +26,9 @@ export default function InventarioPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<"productos" | "categorias" | "importar">("productos")
   const [filterCategory, setFilterCategory] = useState<string>("")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortColumn, setSortColumn] = useState<SortColumn>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [uploading, setUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<{ imported: number; errors?: string[] } | null>(null)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
@@ -109,9 +106,10 @@ export default function InventarioPage() {
     if (res.ok) loadProducts()
   }
 
-  const filteredProducts = filterCategory
-    ? products.filter((p) => p.categorySlug === filterCategory)
-    : products
+  function handleSort(column: SortColumn) {
+    setSortColumn(column)
+    setSortDirection((d) => (sortColumn === column && d === "asc" ? "desc" : "asc"))
+  }
 
   if (loading) {
     return (
@@ -163,114 +161,23 @@ export default function InventarioPage() {
       </div>
 
       {activeTab === "productos" && (
-        <>
-          <div className="flex gap-4 mb-4">
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-3 py-2 rounded-lg border border-slate-300 text-sm"
-            >
-              <option value="">Todas las categorías</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.slug}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-            {filteredProducts.length === 0 ? (
-              <div className="p-12 text-center text-slate-500">
-                No hay productos. Importa un archivo Excel o crea uno manualmente.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Producto</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Categoría</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Precio</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600" title="Visible en catálogo">Catálogo</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600" title="Mostrar u ocultar precio a clientes">Precio</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">Destacado</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredProducts.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                              {p.image ? (
-                                <Image
-                                  src={p.image.startsWith("http") || p.image.startsWith("/") ? p.image : `/${p.image}`}
-                                  alt=""
-                                  width={40}
-                                  height={40}
-                                  unoptimized={p.image.startsWith("http")}
-                                  className="object-contain"
-                                />
-                              ) : (
-                                <Package className="w-5 h-5 text-slate-400" />
-                              )}
-                            </div>
-                            <span className="font-medium text-slate-800 line-clamp-2">{p.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-slate-600 text-sm">{p.category}</td>
-                        <td className="py-3 px-4 font-semibold text-sky-600">{p.priceFormatted}</td>
-                        <td className="py-3 px-4 text-center">
-                          <button
-                            onClick={() => toggleVisible(p)}
-                            className={`p-2 rounded-lg transition ${
-                              p.visible !== false ? "text-green-600 bg-green-50 hover:bg-green-100" : "text-slate-400 hover:bg-slate-100"
-                            }`}
-                            title={p.visible !== false ? "Visible en catálogo" : "Oculto del catálogo"}
-                          >
-                            <Globe className="w-4 h-4" />
-                          </button>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <button
-                            onClick={() => toggleShowPublicPrice(p)}
-                            className={`p-2 rounded-lg transition ${
-                              p.showPublicPrice !== false ? "text-green-600 bg-green-50 hover:bg-green-100" : "text-slate-400 hover:bg-slate-100"
-                            }`}
-                            title={p.showPublicPrice !== false ? "Precio visible a clientes (clic para ocultar)" : "Precio oculto (clic para mostrar)"}
-                          >
-                            {p.showPublicPrice !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                          </button>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <button
-                            onClick={() => toggleFeatured(p)}
-                            className={`p-2 rounded-lg transition ${
-                              p.featured ? "text-amber-500 bg-amber-50 hover:bg-amber-100" : "text-slate-400 hover:bg-slate-100"
-                            }`}
-                            title={p.featured ? "Destacado" : "No destacado"}
-                          >
-                            <Star className={`w-4 h-4 ${p.featured ? "fill-current" : ""}`} />
-                          </button>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <Link
-                            href={`/admin/productos`}
-                            className="inline-flex p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-sky-600"
-                            title="Editar"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </>
+        <AdminProductTable
+          products={products}
+          categories={categories}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filterCategory={filterCategory}
+          onFilterCategoryChange={setFilterCategory}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+          onToggleVisible={toggleVisible}
+          onToggleShowPublicPrice={toggleShowPublicPrice}
+          onToggleFeatured={toggleFeatured}
+          onEdit={() => {}}
+          editMode="link"
+          emptyMessage="No hay productos. Importa un archivo Excel o crea uno manualmente."
+        />
       )}
 
       {activeTab === "categorias" && (

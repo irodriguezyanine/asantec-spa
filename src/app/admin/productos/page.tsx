@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useSearchParams } from "next/navigation"
 import type { Product } from "@/types/product"
+import { AdminProductTable, type SortColumn, type SortDirection } from "@/components/AdminProductTable"
 
 interface Category {
   id: string
@@ -17,9 +19,14 @@ export default function AdminProductosPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filterCategory, setFilterCategory] = useState("")
+  const [sortColumn, setSortColumn] = useState<SortColumn>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+  const searchParams = useSearchParams()
 
   async function loadProducts() {
-    const res = await fetch("/api/products")
+    const res = await fetch("/api/products?admin=true")
     if (res.ok) {
       const data = await res.json()
       setProducts(data)
@@ -39,6 +46,49 @@ export default function AdminProductosPage() {
     loadProducts()
     loadCategories()
   }, [])
+
+  useEffect(() => {
+    const editId = searchParams.get("edit")
+    if (editId && products.length > 0) {
+      const p = products.find((x) => x.id === editId)
+      if (p) {
+        setEditing(p)
+        setShowForm(true)
+      }
+    }
+  }, [searchParams, products])
+
+  async function toggleVisible(p: Product) {
+    const res = await fetch(`/api/products/${p.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visible: !(p.visible !== false) }),
+    })
+    if (res.ok) loadProducts()
+  }
+
+  async function toggleShowPublicPrice(p: Product) {
+    const res = await fetch(`/api/products/${p.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ showPublicPrice: p.showPublicPrice === false }),
+    })
+    if (res.ok) loadProducts()
+  }
+
+  async function toggleFeatured(p: Product) {
+    const res = await fetch(`/api/products/${p.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ featured: !p.featured }),
+    })
+    if (res.ok) loadProducts()
+  }
+
+  function handleSort(column: SortColumn) {
+    setSortColumn(column)
+    setSortDirection((d) => (sortColumn === column && d === "asc" ? "desc" : "asc"))
+  }
 
   if (loading) {
     return (
@@ -79,65 +129,30 @@ export default function AdminProductosPage() {
         />
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        {products.length === 0 ? (
-          <div className="p-12 text-center text-slate-500">
-            No hay productos. Agrega el primero.
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-100">
-            {products.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center gap-4 p-4 hover:bg-slate-50"
-              >
-                <div className="w-16 h-16 rounded-lg bg-slate-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                  {p.image ? (
-                    <Image
-                      src={p.image.startsWith("http") || p.image.startsWith("/") ? p.image : `/${p.image}`}
-                      alt={p.name}
-                      width={64}
-                      height={64}
-                      unoptimized={p.image.startsWith("http")}
-                      className="object-contain"
-                    />
-                  ) : (
-                    <span className="text-2xl">📦</span>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-slate-800 truncate">{p.name}</p>
-                  <p className="text-sm text-slate-500">{p.category}</p>
-                </div>
-                <p className="font-semibold text-sky-600">{p.priceFormatted}</p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setEditing(p)
-                      setShowForm(true)
-                    }}
-                    className="px-3 py-1 text-sm rounded bg-slate-100 hover:bg-slate-200 text-slate-700"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!confirm("¿Eliminar este producto?")) return
-                      const res = await fetch(`/api/products/${p.id}`, {
-                        method: "DELETE",
-                      })
-                      if (res.ok) loadProducts()
-                    }}
-                    className="px-3 py-1 text-sm rounded bg-red-50 hover:bg-red-100 text-red-600"
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <AdminProductTable
+        products={products}
+        categories={categories}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        filterCategory={filterCategory}
+        onFilterCategoryChange={setFilterCategory}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        onSort={handleSort}
+        onToggleVisible={toggleVisible}
+        onToggleShowPublicPrice={toggleShowPublicPrice}
+        onToggleFeatured={toggleFeatured}
+        onEdit={(p) => {
+          setEditing(p)
+          setShowForm(true)
+        }}
+        onDelete={async (p) => {
+          if (!confirm("¿Eliminar este producto?")) return
+          const res = await fetch(`/api/products/${p.id}`, { method: "DELETE" })
+          if (res.ok) loadProducts()
+        }}
+        emptyMessage="No hay productos. Agrega el primero."
+      />
 
       <p className="mt-6">
         <Link href="/admin" className="text-sky-600 hover:underline">
