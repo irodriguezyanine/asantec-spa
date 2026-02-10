@@ -163,7 +163,7 @@ function ProductForm({
   const [brand, setBrand] = useState(product?.brand ?? "")
   const [categorySlug, setCategorySlug] = useState(product?.categorySlug ?? categories[0]?.slug ?? "")
   const [description, setDescription] = useState(product?.description ?? "")
-  const [price, setPrice] = useState(product?.price?.toString() ?? "")
+  const [price, setPrice] = useState<number>(product?.price ?? 0)
   const [image, setImage] = useState(product?.image ?? "")
   const [featured, setFeatured] = useState(product?.featured ?? false)
   const [inStock, setInStock] = useState(product?.inStock ?? true)
@@ -199,7 +199,7 @@ function ProductForm({
         category: category?.name ?? categorySlug,
         categorySlug,
         description,
-        price: typeof price === "number" ? price : parseInt(String(price).replace(/\D/g, ""), 10) || 0,
+        price,
         image,
         featured,
         inStock,
@@ -298,7 +298,7 @@ function ProductForm({
               <input
                 type="text"
                 inputMode="numeric"
-                value={price ? `$${Number(price).toLocaleString("es-CL")}` : ""}
+                value={price ? `$${price.toLocaleString("es-CL")}` : ""}
                 onChange={(e) => {
                   const raw = e.target.value.replace(/\D/g, "")
                   const num = parseInt(raw, 10) || 0
