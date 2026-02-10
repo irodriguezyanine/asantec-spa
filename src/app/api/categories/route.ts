@@ -3,20 +3,27 @@ import { getDb } from "@/lib/db"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const admin = searchParams.get("admin") === "true"
+
     const db = await getDb()
     const collection = db.collection("categories")
-    const docs = await collection.find({}).toArray()
+    const query: Record<string, unknown> = {}
+    if (!admin) {
+      query.$or = [{ visible: { $ne: false } }, { visible: { $exists: false } }]
+    }
+    const docs = await collection.find(query).sort({ name: 1 }).toArray()
 
-    if (docs.length === 0) {
+    if (docs.length === 0 && !admin) {
       const defaultCategories = [
-        { id: "computadores", name: "Computadores", slug: "computadores", description: "Notebooks, PCs de escritorio y todo en uno" },
-        { id: "monitores", name: "Monitores", slug: "monitores", description: "Pantallas y monitores para oficina y gaming" },
-        { id: "perifericos", name: "Periféricos", slug: "perifericos", description: "Teclados, mouse, webcams y más" },
-        { id: "impresoras", name: "Impresoras", slug: "impresoras", description: "Impresoras y multifuncionales" },
-        { id: "almacenamiento", name: "Almacenamiento", slug: "almacenamiento", description: "Discos duros, SSD, memorias" },
-        { id: "red-y-conectividad", name: "Red y conectividad", slug: "red-y-conectividad", description: "Cables, conectores, redes" },
+        { id: "computadores", name: "Computadores", slug: "computadores", description: "Notebooks, PCs de escritorio y todo en uno", visible: true },
+        { id: "monitores", name: "Monitores", slug: "monitores", description: "Pantallas y monitores para oficina y gaming", visible: true },
+        { id: "perifericos", name: "Periféricos", slug: "perifericos", description: "Teclados, mouse, webcams y más", visible: true },
+        { id: "impresoras", name: "Impresoras", slug: "impresoras", description: "Impresoras y multifuncionales", visible: true },
+        { id: "almacenamiento", name: "Almacenamiento", slug: "almacenamiento", description: "Discos duros, SSD, memorias", visible: true },
+        { id: "red-y-conectividad", name: "Red y conectividad", slug: "red-y-conectividad", description: "Cables, conectores, redes", visible: true },
       ]
       await collection.insertMany(defaultCategories)
       const inserted = await collection.find({}).toArray()
@@ -64,6 +71,8 @@ export async function POST(request: Request) {
       name,
       slug,
       description: body.description || "",
+      visible: body.visible !== false,
+      parentId: body.parentId || null,
     })
     const inserted = await collection.findOne({ slug })
     return NextResponse.json({ ...inserted, id: (inserted as { _id: { toString: () => string } })._id.toString() }, { status: 201 })

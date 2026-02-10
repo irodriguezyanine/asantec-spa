@@ -1,7 +1,14 @@
 import Link from "next/link"
 import { Mail, Phone, MapPin } from "lucide-react"
+import type { Category } from "@/types/product"
 
-export function Footer() {
+export function Footer({ categories = [] }: { categories?: Category[] }) {
+  const cats = categories.length > 0 ? categories : [
+    { id: "computadores", name: "Computadores", slug: "computadores" },
+    { id: "monitores", name: "Monitores", slug: "monitores" },
+    { id: "perifericos", name: "Periféricos", slug: "perifericos" },
+    { id: "impresoras", name: "Impresoras", slug: "impresoras" },
+  ]
   return (
     <footer className="bg-slate-900 text-slate-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
@@ -25,10 +32,11 @@ export function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-3">Categorías</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/catalogo/computadores" className="hover:text-sky-400 transition">Computadores</Link></li>
-              <li><Link href="/catalogo/monitores" className="hover:text-sky-400 transition">Monitores</Link></li>
-              <li><Link href="/catalogo/perifericos" className="hover:text-sky-400 transition">Periféricos</Link></li>
-              <li><Link href="/catalogo/impresoras" className="hover:text-sky-400 transition">Impresoras</Link></li>
+              {cats.map((cat) => (
+                <li key={cat.id}>
+                  <Link href={`/catalogo/${cat.slug}`} className="hover:text-sky-400 transition">{cat.name}</Link>
+                </li>
+              ))}
             </ul>
           </div>
           <div>

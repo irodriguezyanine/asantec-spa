@@ -6,9 +6,17 @@ import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { Menu, X, LogIn, Search, Shield } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { categories } from "@/data/products"
+import type { Category } from "@/types/product"
 
-export function Header() {
+export function Header({ categories = [] }: { categories?: Category[] }) {
+  const cats = categories.length > 0 ? categories : [
+    { id: "computadores", name: "Computadores", slug: "computadores" },
+    { id: "monitores", name: "Monitores", slug: "monitores" },
+    { id: "perifericos", name: "Periféricos", slug: "perifericos" },
+    { id: "impresoras", name: "Impresoras", slug: "impresoras" },
+    { id: "almacenamiento", name: "Almacenamiento", slug: "almacenamiento" },
+    { id: "red-y-conectividad", name: "Red y conectividad", slug: "red-y-conectividad" },
+  ]
   const { data: session } = useSession()
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -51,7 +59,7 @@ export function Header() {
               </button>
               <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                 <div className="bg-white rounded-lg shadow-lg border border-slate-200 py-2 min-w-[200px]">
-                  {categories.map((cat) => (
+                  {cats.map((cat) => (
                     <Link
                       key={cat.id}
                       href={`/catalogo/${cat.slug}`}
@@ -149,7 +157,7 @@ export function Header() {
               Catálogo
             </Link>
             <span className="py-2 text-slate-500 text-sm font-medium">Categorías</span>
-            {categories.map((cat) => (
+            {cats.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/catalogo/${cat.slug}`}

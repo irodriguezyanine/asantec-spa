@@ -5,6 +5,7 @@ import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { WhatsAppButton } from "@/components/WhatsAppButton"
 import { SessionProvider } from "@/components/SessionProvider"
+import { getCategoriesSafe } from "@/lib/categories"
 
 const inter = Inter({
   variable: "--font-sans",
@@ -29,18 +30,20 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const categories = await getCategoriesSafe()
+  const mainCategories = categories.filter((c) => !c.parentId)
   return (
     <html lang="es">
       <body className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}>
         <SessionProvider>
-          <Header />
+          <Header categories={mainCategories} />
           <main className="flex-1">{children}</main>
-          <Footer />
+          <Footer categories={mainCategories} />
           <WhatsAppButton />
         </SessionProvider>
       </body>

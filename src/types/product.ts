@@ -24,4 +24,6 @@ export interface Category {
   description?: string
   icon?: string
   productCount?: number
+  visible?: boolean
+  parentId?: string | null
 }

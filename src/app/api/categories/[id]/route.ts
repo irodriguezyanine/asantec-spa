@@ -22,7 +22,7 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, slug, description } = body
+    const { name, slug, description, visible, parentId } = body
 
     const db = await getDb()
     const collection = db.collection("categories")
@@ -31,6 +31,8 @@ export async function PUT(
     if (name !== undefined) update.name = name
     if (slug !== undefined) update.slug = slug
     if (description !== undefined) update.description = description
+    if (visible !== undefined) update.visible = Boolean(visible)
+    if (parentId !== undefined) update.parentId = parentId || null
 
     let result
     if (ObjectId.isValid(id)) {

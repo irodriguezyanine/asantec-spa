@@ -10,6 +10,8 @@ import {
   Plus,
   X,
   Pencil,
+  Eye,
+  EyeOff,
 } from "lucide-react"
 import type { Product } from "@/types/product"
 import { AdminProductTable, type SortColumn, type SortDirection } from "@/components/AdminProductTable"
@@ -19,6 +21,8 @@ interface Category {
   name: string
   slug: string
   description?: string
+  visible?: boolean
+  parentId?: string | null
 }
 
 export default function InventarioPage() {
@@ -32,6 +36,7 @@ export default function InventarioPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [uploading, setUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<{ imported: number; errors?: string[] } | null>(null)
+  const [stockActualLoading, setStockActualLoading] = useState(false)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
 
@@ -44,7 +49,7 @@ export default function InventarioPage() {
   }
 
   async function loadCategories() {
-    const res = await fetch("/api/categories")
+    const res = await fetch("/api/categories?admin=true")
     if (res.ok) {
       const data = await res.json()
       setCategories(data)
@@ -54,6 +59,25 @@ export default function InventarioPage() {
   useEffect(() => {
     Promise.all([loadProducts(), loadCategories()]).finally(() => setLoading(false))
   }, [])
+
+  async function loadStockActual() {
+    setStockActualLoading(true)
+    try {
+      const res = await fetch("/api/seed/stock-actual", { method: "POST" })
+      const data = await res.json()
+      if (res.ok) {
+        loadProducts()
+        loadCategories()
+        setUploadResult({ imported: data.imported ?? 17 })
+      } else {
+        setUploadResult({ imported: 0, errors: [data.error ?? "Error"] })
+      }
+    } catch {
+      setUploadResult({ imported: 0, errors: ["Error al cargar STOCK ACTUAL"] })
+    } finally {
+      setStockActualLoading(false)
+    }
+  }
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -110,6 +134,15 @@ export default function InventarioPage() {
   function handleSort(column: SortColumn) {
     setSortColumn(column)
     setSortDirection((d) => (sortColumn === column && d === "asc" ? "desc" : "asc"))
+  }
+
+  async function toggleCategoryVisible(c: Category) {
+    const res = await fetch(`/api/categories/${c.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visible: c.visible === false }),
+    })
+    if (res.ok) loadCategories()
   }
 
   if (loading) {
@@ -196,6 +229,7 @@ export default function InventarioPage() {
           {showCategoryForm && (
             <CategoryForm
               category={editingCategory}
+              categories={categories}
               onClose={() => {
                 setShowCategoryForm(false)
                 setEditingCategory(null)
@@ -209,25 +243,75 @@ export default function InventarioPage() {
           )}
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <div className="divide-y divide-slate-100">
-              {categories.map((c) => (
-                <div key={c.id} className="flex items-center justify-between p-4 hover:bg-slate-50">
-                  <div>
-                    <p className="font-medium text-slate-800">{c.name}</p>
-                    <p className="text-sm text-slate-500">{c.slug}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setEditingCategory(c)
-                        setShowCategoryForm(true)
-                      }}
-                      className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-sky-600"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+              {categories
+                .filter((c) => !c.parentId || !categories.some((p) => p.id === c.parentId))
+                .map((parent) => {
+                  const subcats = categories.filter((s) => s.parentId === parent.id)
+                  return (
+                    <div key={parent.id}>
+                      <div className="flex items-center justify-between p-4 hover:bg-slate-50">
+                        <div>
+                          <p className="font-medium text-slate-800">{parent.name}</p>
+                          <p className="text-sm text-slate-500">{parent.slug}</p>
+                          {parent.visible === false && (
+                            <span className="text-xs text-amber-600 mt-1">Oculta del público</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => toggleCategoryVisible(parent)}
+                            className={`p-2 rounded-lg transition ${
+                              parent.visible !== false ? "text-green-600 bg-green-50 hover:bg-green-100" : "text-slate-400 hover:bg-slate-100"
+                            }`}
+                            title={parent.visible !== false ? "Visible (clic para ocultar)" : "Oculta (clic para mostrar)"}
+                          >
+                            {parent.visible !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingCategory(parent)
+                              setShowCategoryForm(true)
+                            }}
+                            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-sky-600"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      {subcats.map((sub) => (
+                        <div key={sub.id} className="flex items-center justify-between pl-12 pr-4 py-2 hover:bg-slate-50 border-t border-slate-50">
+                          <div>
+                            <p className="font-medium text-slate-700 text-sm">↳ {sub.name}</p>
+                            <p className="text-xs text-slate-500">{sub.slug}</p>
+                            {sub.visible === false && (
+                              <span className="text-xs text-amber-600">Oculta</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => toggleCategoryVisible(sub)}
+                              className={`p-2 rounded-lg transition ${
+                                sub.visible !== false ? "text-green-600 bg-green-50" : "text-slate-400 hover:bg-slate-100"
+                              }`}
+                              title={sub.visible !== false ? "Visible" : "Oculta"}
+                            >
+                              {sub.visible !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingCategory(sub)
+                                setShowCategoryForm(true)
+                              }}
+                              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-sky-600"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })}
             </div>
           </div>
         </div>
@@ -235,6 +319,19 @@ export default function InventarioPage() {
 
       {activeTab === "importar" && (
         <div className="space-y-6">
+          <div className="p-4 rounded-xl border border-sky-200 bg-sky-50">
+            <h3 className="font-semibold text-slate-800 mb-2">Categoría STOCK ACTUAL</h3>
+            <p className="text-sm text-slate-600 mb-3">
+              Crea la categoría &quot;STOCK ACTUAL&quot; con 17 productos del inventario (NUC, placas madre, tarjetas de video, procesadores, memorias).
+            </p>
+            <button
+              onClick={loadStockActual}
+              disabled={stockActualLoading}
+              className="px-4 py-2 rounded-lg bg-sky-600 text-white font-medium hover:bg-sky-700 disabled:opacity-50"
+            >
+              {stockActualLoading ? "Cargando..." : "Cargar STOCK ACTUAL"}
+            </button>
+          </div>
           <div
             className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:border-sky-400 hover:bg-sky-50/50 transition"
             onDragOver={(e) => e.preventDefault()}
@@ -313,17 +410,21 @@ export default function InventarioPage() {
 
 function CategoryForm({
   category,
+  categories,
   onClose,
   onSave,
 }: {
   category: Category | null
+  categories: Category[]
   onClose: () => void
   onSave: () => void
 }) {
   const [name, setName] = useState(category?.name ?? "")
   const [slug, setSlug] = useState(category?.slug ?? "")
   const [description, setDescription] = useState(category?.description ?? "")
+  const [parentId, setParentId] = useState<string>(category?.parentId ?? "")
   const [saving, setSaving] = useState(false)
+  const parentOptions = categories.filter((c) => !c.parentId && c.id !== category?.id)
 
   function slugify(s: string) {
     return s
@@ -341,8 +442,8 @@ function CategoryForm({
       const url = category ? `/api/categories/${category.id}` : "/api/categories"
       const method = category ? "PUT" : "POST"
       const body = category
-        ? { name, slug, description }
-        : { name, slug: slug || slugify(name), description }
+        ? { name, slug, description, parentId: parentId || null }
+        : { name, slug: slug || slugify(name), description, parentId: parentId || null }
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -390,6 +491,21 @@ function CategoryForm({
               className="w-full px-4 py-2 rounded-lg border border-slate-300"
               placeholder="ej: computadores"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Subcategoría de (opcional)</label>
+            <select
+              value={parentId}
+              onChange={(e) => setParentId(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg border border-slate-300"
+            >
+              <option value="">Ninguna (categoría principal)</option>
+              {parentOptions.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Descripción</label>

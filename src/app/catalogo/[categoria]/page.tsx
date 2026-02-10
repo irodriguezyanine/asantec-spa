@@ -1,19 +1,23 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ProductCard } from "@/components/ProductCard"
-import { categories } from "@/data/products"
+import { getCategoriesSafe } from "@/lib/categories"
 import { getProductsByCategorySafe } from "@/lib/products"
 
 interface PageProps {
   params: Promise<{ categoria: string }>
 }
 
+export const dynamicParams = true
+
 export async function generateStaticParams() {
+  const categories = await getCategoriesSafe()
   return categories.map((cat) => ({ categoria: cat.slug }))
 }
 
 export async function generateMetadata({ params }: PageProps) {
   const { categoria } = await params
+  const categories = await getCategoriesSafe()
   const cat = categories.find((c) => c.slug === categoria)
   if (!cat) return { title: "Categoría | ASANTEC SPA" }
   return {
@@ -24,6 +28,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function CategoriaPage({ params }: PageProps) {
   const { categoria } = await params
+  const categories = await getCategoriesSafe()
   const cat = categories.find((c) => c.slug === categoria)
   if (!cat) notFound()
 

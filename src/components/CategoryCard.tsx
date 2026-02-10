@@ -9,6 +9,7 @@ const categoryIcons: Record<string, string> = {
   impresoras: "🖨️",
   almacenamiento: "💾",
   "red-y-conectividad": "🔌",
+  "stock-actual": "📦",
 }
 
 interface CategoryCardProps {

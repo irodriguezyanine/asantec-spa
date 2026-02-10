@@ -1,12 +1,13 @@
 import { Hero } from "@/components/Hero"
 import { CategoryCard } from "@/components/CategoryCard"
 import { ProductCard } from "@/components/ProductCard"
-import { categories } from "@/data/products"
+import { getCategoriesSafe } from "@/lib/categories"
 import { getFeaturedProductsSafe } from "@/lib/products"
 import Link from "next/link"
 
 export default async function HomePage() {
-  const featured = await getFeaturedProductsSafe()
+  const [categories, featured] = await Promise.all([getCategoriesSafe(), getFeaturedProductsSafe()])
+  const mainCategories = categories.filter((c) => !c.parentId)
 
   return (
     <>
@@ -14,7 +15,7 @@ export default async function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <h2 className="text-2xl font-bold text-slate-800 mb-6">Categorías</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((cat) => (
+          {mainCategories.map((cat) => (
             <CategoryCard key={cat.id} category={cat} />
           ))}
         </div>
