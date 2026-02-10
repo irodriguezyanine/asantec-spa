@@ -98,6 +98,7 @@ export default function AdminProductosPage() {
                       alt={p.name}
                       width={64}
                       height={64}
+                      unoptimized={p.image.startsWith("http")}
                       className="object-contain"
                     />
                   ) : (
@@ -321,6 +322,7 @@ function ProductForm({
                     src={image.startsWith("http") || image.startsWith("/") ? image : `/${image}`}
                     alt="Preview"
                     fill
+                    unoptimized={image.startsWith("http")}
                     className="object-contain"
                   />
                 </div>

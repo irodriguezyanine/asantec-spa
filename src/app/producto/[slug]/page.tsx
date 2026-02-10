@@ -40,6 +40,7 @@ export default async function ProductoPage({ params }: PageProps) {
               src={product.image}
               alt={product.name}
               fill
+              unoptimized={product.image.startsWith("http")}
               className="object-contain p-4"
               sizes="(max-width: 1024px) 50vw, 40vw"
             />
@@ -64,12 +65,14 @@ export default async function ProductoPage({ params }: PageProps) {
             <p className="text-amber-600 font-medium mt-2">Sin stock actualmente</p>
           )}
           <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              className="px-6 py-3 rounded-lg bg-sky-600 text-white font-semibold hover:bg-sky-700 transition"
+            <a
+              href={`https://wa.me/56976488856?text=${encodeURIComponent(`Hola! Vengo de asantec.cl y estoy interesado en el modelo "${product.name}"`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 rounded-lg bg-sky-600 text-white font-semibold hover:bg-sky-700 transition inline-block"
             >
               Consultar disponibilidad
-            </button>
+            </a>
             <Link
               href="/contacto"
               className="px-6 py-3 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition inline-block"

@@ -198,6 +198,7 @@ export default function InventarioPage() {
                                   alt=""
                                   width={40}
                                   height={40}
+                                  unoptimized={p.image.startsWith("http")}
                                   className="object-contain"
                                 />
                               ) : (
