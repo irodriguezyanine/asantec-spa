@@ -44,7 +44,19 @@ export function ProductCard({ product, className, hidePrice }: ProductCardProps)
         <h3 className="font-semibold text-slate-800 mt-1 line-clamp-2 group-hover:text-sky-600 transition">
           {product.name}
         </h3>
-        {!hidePrice && <p className="mt-2 text-lg font-bold text-sky-600">{product.priceFormatted}</p>}
+        {hidePrice ? (
+          <a
+            href={`https://wa.me/56998661395?text=${encodeURIComponent(`Hola! Vengo de asantec.cl y me interesa cotizar: "${product.name}"`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="mt-2 inline-block px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition"
+          >
+            Cotizar
+          </a>
+        ) : (
+          <p className="mt-2 text-lg font-bold text-sky-600">{product.priceFormatted}</p>
+        )}
         {product.inStock === false && (
           <p className="text-sm text-amber-600 mt-1">Sin stock</p>
         )}

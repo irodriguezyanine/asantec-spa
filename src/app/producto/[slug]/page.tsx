@@ -22,6 +22,7 @@ export default async function ProductoPage({ params }: PageProps) {
   const { slug } = await params
   const [product, hidePrices] = await Promise.all([getProductBySlugSafe(slug), getHidePrices()])
   if (!product) notFound()
+  const hidePrice = hidePrices || product.showPublicPrice === false
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -60,7 +61,18 @@ export default async function ProductoPage({ params }: PageProps) {
         <div>
           <p className="text-sky-600 font-semibold uppercase tracking-wide">{product.brand}</p>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">{product.name}</h1>
-          {!hidePrices && <p className="text-3xl font-bold text-sky-600 mt-4">{product.priceFormatted}</p>}
+          {hidePrice ? (
+            <a
+              href={`https://wa.me/56998661395?text=${encodeURIComponent(`Hola! Vengo de asantec.cl y me interesa cotizar: "${product.name}"`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block px-6 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition"
+            >
+              Cotizar
+            </a>
+          ) : (
+            <p className="text-3xl font-bold text-sky-600 mt-4">{product.priceFormatted}</p>
+          )}
           <p className="text-slate-600 mt-4">{product.description}</p>
           {product.inStock === false && (
             <p className="text-amber-600 font-medium mt-2">Sin stock actualmente</p>

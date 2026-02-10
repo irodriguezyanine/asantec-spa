@@ -10,7 +10,7 @@ export function Footer() {
             <h3 className="text-white font-bold text-xl mb-3">ASANTEC SPA</h3>
             <p className="text-sky-400 font-medium">Tu socio tecnológico!</p>
             <p className="mt-2 text-sm">
-              Más de 10 años ofreciendo soluciones informáticas y tecnológicas en todo Chile.
+              Av. Francisco Bilbao 3771 oficina 402, Providencia.
             </p>
           </div>
           <div>
@@ -40,11 +40,15 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-sky-400 shrink-0" />
+                <a href="tel:+56961901453" className="hover:text-sky-400 transition">+56 9 6190 1453</a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-sky-400 shrink-0" />
                 <a href="tel:+56998661395" className="hover:text-sky-400 transition">+56 9 9866 1395</a>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
-                <span>Todo Chile</span>
+                <span>Av. Francisco Bilbao 3771 oficina 402, Providencia</span>
               </li>
             </ul>
           </div>

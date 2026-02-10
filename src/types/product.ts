@@ -13,6 +13,7 @@ export interface Product {
   featured?: boolean
   inStock?: boolean
   visible?: boolean
+  showPublicPrice?: boolean
   specs?: Record<string, string>
 }
 

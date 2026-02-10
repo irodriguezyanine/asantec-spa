@@ -20,6 +20,7 @@ function formatProduct(doc: Record<string, unknown>): Product {
     featured: doc.featured as boolean | undefined,
     inStock: doc.inStock as boolean | undefined,
     visible: doc.visible as boolean | undefined,
+    showPublicPrice: doc.showPublicPrice as boolean | undefined,
     specs: doc.specs as Record<string, string> | undefined,
   }
 }
@@ -99,6 +100,7 @@ export async function POST(request: Request) {
       featured: Boolean(featured),
       inStock: inStock !== false,
       visible: body.visible !== false,
+      showPublicPrice: body.showPublicPrice !== false,
       createdAt: new Date(),
     }
 

@@ -168,6 +168,7 @@ function ProductForm({
   const [featured, setFeatured] = useState(product?.featured ?? false)
   const [inStock, setInStock] = useState(product?.inStock ?? true)
   const [visible, setVisible] = useState(product?.visible !== false)
+  const [showPublicPrice, setShowPublicPrice] = useState(product?.showPublicPrice !== false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
 
@@ -198,11 +199,12 @@ function ProductForm({
         category: category?.name ?? categorySlug,
         categorySlug,
         description,
-        price: parseInt(price, 10) || 0,
+        price: typeof price === "number" ? price : parseInt(String(price).replace(/\D/g, ""), 10) || 0,
         image,
         featured,
         inStock,
         visible,
+        showPublicPrice,
       }
 
       const url = product ? `/api/products/${product.id}` : "/api/products"
@@ -294,10 +296,15 @@ function ProductForm({
                 Precio (CLP)
               </label>
               <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                min={0}
+                type="text"
+                inputMode="numeric"
+                value={price ? `$${price.toLocaleString("es-CL")}` : ""}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, "")
+                  const num = parseInt(raw, 10) || 0
+                  setPrice(num)
+                }}
+                placeholder="$ 0"
                 className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
               />
             </div>
@@ -353,6 +360,14 @@ function ProductForm({
                   onChange={(e) => setVisible(e.target.checked)}
                 />
                 <span className="text-sm">Visible en catálogo</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showPublicPrice}
+                  onChange={(e) => setShowPublicPrice(e.target.checked)}
+                />
+                <span className="text-sm">{showPublicPrice ? "Ocultar precio" : "Mostrar precio público"}</span>
               </label>
             </div>
 

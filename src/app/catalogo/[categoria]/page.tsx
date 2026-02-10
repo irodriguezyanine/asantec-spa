@@ -48,7 +48,7 @@ export default async function CategoriaPage({ params }: PageProps) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {items.map((product) => (
-            <ProductCard key={product.id} product={product} hidePrice={hidePrices} />
+            <ProductCard key={product.id} product={product} hidePrice={hidePrices || product.showPublicPrice === false} />
           ))}
         </div>
       )}
