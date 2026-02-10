@@ -3,7 +3,6 @@ import Link from "next/link"
 import { ProductCard } from "@/components/ProductCard"
 import { categories } from "@/data/products"
 import { getProductsByCategorySafe } from "@/lib/products"
-import { getHidePrices } from "@/lib/settings"
 
 interface PageProps {
   params: Promise<{ categoria: string }>
@@ -28,7 +27,7 @@ export default async function CategoriaPage({ params }: PageProps) {
   const cat = categories.find((c) => c.slug === categoria)
   if (!cat) notFound()
 
-  const [items, hidePrices] = await Promise.all([getProductsByCategorySafe(categoria), getHidePrices()])
+  const items = await getProductsByCategorySafe(categoria)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -48,7 +47,7 @@ export default async function CategoriaPage({ params }: PageProps) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {items.map((product) => (
-            <ProductCard key={product.id} product={product} hidePrice={hidePrices || product.showPublicPrice === false} />
+            <ProductCard key={product.id} product={product} hidePrice={product.showPublicPrice === false} />
           ))}
         </div>
       )}

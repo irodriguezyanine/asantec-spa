@@ -3,11 +3,10 @@ import { CategoryCard } from "@/components/CategoryCard"
 import { ProductCard } from "@/components/ProductCard"
 import { categories } from "@/data/products"
 import { getFeaturedProductsSafe } from "@/lib/products"
-import { getHidePrices } from "@/lib/settings"
 import Link from "next/link"
 
 export default async function HomePage() {
-  const [featured, hidePrices] = await Promise.all([getFeaturedProductsSafe(), getHidePrices()])
+  const featured = await getFeaturedProductsSafe()
 
   return (
     <>
@@ -29,7 +28,7 @@ export default async function HomePage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {featured.map((product) => (
-            <ProductCard key={product.id} product={product} hidePrice={hidePrices || product.showPublicPrice === false} />
+            <ProductCard key={product.id} product={product} hidePrice={product.showPublicPrice === false} />
           ))}
         </div>
       </section>

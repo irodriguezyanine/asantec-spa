@@ -15,6 +15,7 @@ import {
   Trash2,
   Plus,
   X,
+  Globe,
 } from "lucide-react"
 import type { Product } from "@/types/product"
 
@@ -86,6 +87,15 @@ export default function InventarioPage() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ visible: !(product.visible !== false) }),
+    })
+    if (res.ok) loadProducts()
+  }
+
+  async function toggleShowPublicPrice(product: Product) {
+    const res = await fetch(`/api/products/${product.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ showPublicPrice: product.showPublicPrice === false }),
     })
     if (res.ok) loadProducts()
   }
@@ -181,7 +191,8 @@ export default function InventarioPage() {
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Producto</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Categoría</th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Precio</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">Visible</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600" title="Visible en catálogo">Catálogo</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600" title="Mostrar u ocultar precio a clientes">Precio</th>
                       <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">Destacado</th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600">Acciones</th>
                     </tr>
@@ -216,9 +227,20 @@ export default function InventarioPage() {
                             className={`p-2 rounded-lg transition ${
                               p.visible !== false ? "text-green-600 bg-green-50 hover:bg-green-100" : "text-slate-400 hover:bg-slate-100"
                             }`}
-                            title={p.visible !== false ? "Visible en catálogo" : "Oculto"}
+                            title={p.visible !== false ? "Visible en catálogo" : "Oculto del catálogo"}
                           >
-                            {p.visible !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                            <Globe className="w-4 h-4" />
+                          </button>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            onClick={() => toggleShowPublicPrice(p)}
+                            className={`p-2 rounded-lg transition ${
+                              p.showPublicPrice !== false ? "text-green-600 bg-green-50 hover:bg-green-100" : "text-slate-400 hover:bg-slate-100"
+                            }`}
+                            title={p.showPublicPrice !== false ? "Precio visible a clientes (clic para ocultar)" : "Precio oculto (clic para mostrar)"}
+                          >
+                            {p.showPublicPrice !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                           </button>
                         </td>
                         <td className="py-3 px-4 text-center">
