@@ -12,6 +12,8 @@ import {
   Pencil,
   Eye,
   EyeOff,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react"
 import type { Product } from "@/types/product"
 import { AdminProductTable, type SortColumn, type SortDirection } from "@/components/AdminProductTable"
@@ -37,6 +39,8 @@ export default function InventarioPage() {
   const [uploading, setUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<{ imported: number; errors?: string[] } | null>(null)
   const [stockActualLoading, setStockActualLoading] = useState(false)
+  const [expandedCategorySlug, setExpandedCategorySlug] = useState<string | null>(null)
+  const [categoryViewSearch, setCategoryViewSearch] = useState("")
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
 
@@ -134,6 +138,16 @@ export default function InventarioPage() {
   function handleSort(column: SortColumn) {
     setSortColumn(column)
     setSortDirection((d) => (sortColumn === column && d === "asc" ? "desc" : "asc"))
+  }
+
+  function getCategoryTotal(slug: string): number {
+    return products
+      .filter((p) => p.categorySlug === slug)
+      .reduce((sum, p) => sum + (p.price || 0), 0)
+  }
+
+  function formatChileanPeso(n: number): string {
+    return `$${n.toLocaleString("es-CL")}`
   }
 
   async function toggleCategoryVisible(c: Category) {
@@ -247,19 +261,32 @@ export default function InventarioPage() {
                 .filter((c) => !c.parentId || !categories.some((p) => p.id === c.parentId))
                 .map((parent) => {
                   const subcats = categories.filter((s) => s.parentId === parent.id)
+                  const isParentExpanded = expandedCategorySlug === parent.slug
+                  const parentTotal = getCategoryTotal(parent.slug)
                   return (
                     <div key={parent.id}>
                       <div className="flex items-center justify-between p-4 hover:bg-slate-50">
-                        <div>
-                          <p className="font-medium text-slate-800">{parent.name}</p>
-                          <p className="text-sm text-slate-500">{parent.slug}</p>
-                          {parent.visible === false && (
-                            <span className="text-xs text-amber-600 mt-1">Oculta del público</span>
-                          )}
+                        <div
+                          className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+                          onClick={() => setExpandedCategorySlug(isParentExpanded ? null : parent.slug)}
+                        >
+                          <span className="text-slate-400">
+                            {isParentExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                          </span>
+                          <div>
+                            <p className="font-medium text-slate-800">{parent.name}</p>
+                            <p className="text-sm text-slate-500">{parent.slug}</p>
+                            {parent.visible === false && (
+                              <span className="text-xs text-amber-600 mt-1">Oculta del público</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-semibold text-sky-600 whitespace-nowrap">
+                            {formatChileanPeso(parentTotal)}
+                          </span>
                           <button
-                            onClick={() => toggleCategoryVisible(parent)}
+                            onClick={(e) => { e.stopPropagation(); toggleCategoryVisible(parent) }}
                             className={`p-2 rounded-lg transition ${
                               parent.visible !== false ? "text-green-600 bg-green-50 hover:bg-green-100" : "text-slate-400 hover:bg-slate-100"
                             }`}
@@ -268,47 +295,112 @@ export default function InventarioPage() {
                             {parent.visible !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                           </button>
                           <button
-                            onClick={() => {
-                              setEditingCategory(parent)
-                              setShowCategoryForm(true)
-                            }}
+                            onClick={(e) => { e.stopPropagation(); setEditingCategory(parent); setShowCategoryForm(true) }}
                             className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-sky-600"
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
-                      {subcats.map((sub) => (
-                        <div key={sub.id} className="flex items-center justify-between pl-12 pr-4 py-2 hover:bg-slate-50 border-t border-slate-50">
-                          <div>
-                            <p className="font-medium text-slate-700 text-sm">↳ {sub.name}</p>
-                            <p className="text-xs text-slate-500">{sub.slug}</p>
-                            {sub.visible === false && (
-                              <span className="text-xs text-amber-600">Oculta</span>
-                            )}
+                      {subcats.map((sub) => {
+                        const isSubExpanded = expandedCategorySlug === sub.slug
+                        const subTotal = getCategoryTotal(sub.slug)
+                        return (
+                          <div key={sub.id} className="flex items-center justify-between pl-12 pr-4 py-2 hover:bg-slate-50 border-t border-slate-50">
+                            <div
+                              className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+                              onClick={() => setExpandedCategorySlug(isSubExpanded ? null : sub.slug)}
+                            >
+                              <span className="text-slate-400">
+                                {isSubExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                              </span>
+                              <div>
+                                <p className="font-medium text-slate-700 text-sm">↳ {sub.name}</p>
+                                <p className="text-xs text-slate-500">{sub.slug}</p>
+                                {sub.visible === false && (
+                                  <span className="text-xs text-amber-600">Oculta</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-semibold text-sky-600 whitespace-nowrap">
+                                {formatChileanPeso(subTotal)}
+                              </span>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); toggleCategoryVisible(sub) }}
+                                className={`p-2 rounded-lg transition ${
+                                  sub.visible !== false ? "text-green-600 bg-green-50" : "text-slate-400 hover:bg-slate-100"
+                                }`}
+                                title={sub.visible !== false ? "Visible" : "Oculta"}
+                              >
+                                {sub.visible !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setEditingCategory(sub); setShowCategoryForm(true) }}
+                                className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-sky-600"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => toggleCategoryVisible(sub)}
-                              className={`p-2 rounded-lg transition ${
-                                sub.visible !== false ? "text-green-600 bg-green-50" : "text-slate-400 hover:bg-slate-100"
-                              }`}
-                              title={sub.visible !== false ? "Visible" : "Oculta"}
-                            >
-                              {sub.visible !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setEditingCategory(sub)
-                                setShowCategoryForm(true)
-                              }}
-                              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-sky-600"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
+                        )
+                      })}
+                      {isParentExpanded && (
+                        <div className="border-t border-slate-200 bg-slate-50/50 p-4">
+                          <AdminProductTable
+                            products={products.filter((p) => p.categorySlug === parent.slug)}
+                            categories={categories}
+                            searchQuery={categoryViewSearch}
+                            onSearchChange={setCategoryViewSearch}
+                            filterCategory={parent.slug}
+                            onFilterCategoryChange={() => {}}
+                            sortColumn={sortColumn}
+                            sortDirection={sortDirection}
+                            onSort={handleSort}
+                            onToggleVisible={toggleVisible}
+                            onToggleShowPublicPrice={toggleShowPublicPrice}
+                            onToggleFeatured={toggleFeatured}
+                            onEdit={() => {}}
+                            editMode="link"
+                            emptyMessage={`No hay productos en ${parent.name}.`}
+                          />
+                          <div className="mt-4 pt-4 border-t border-slate-200 flex justify-end">
+                            <p className="text-lg font-bold text-sky-600">
+                              Total {parent.name}: {formatChileanPeso(parentTotal)}
+                            </p>
                           </div>
                         </div>
-                      ))}
+                      )}
+                      {subcats.map((sub) => {
+                        if (expandedCategorySlug !== sub.slug) return null
+                        const subTotal = getCategoryTotal(sub.slug)
+                        return (
+                          <div key={`expanded-${sub.id}`} className="border-t border-slate-200 bg-slate-50/50 p-4 pl-14">
+                            <AdminProductTable
+                              products={products.filter((p) => p.categorySlug === sub.slug)}
+                              categories={categories}
+                              searchQuery={categoryViewSearch}
+                              onSearchChange={setCategoryViewSearch}
+                              filterCategory={sub.slug}
+                              onFilterCategoryChange={() => {}}
+                              sortColumn={sortColumn}
+                              sortDirection={sortDirection}
+                              onSort={handleSort}
+                              onToggleVisible={toggleVisible}
+                              onToggleShowPublicPrice={toggleShowPublicPrice}
+                              onToggleFeatured={toggleFeatured}
+                              onEdit={() => {}}
+                              editMode="link"
+                              emptyMessage={`No hay productos en ${sub.name}.`}
+                            />
+                            <div className="mt-4 pt-4 border-t border-slate-200 flex justify-end">
+                              <p className="text-lg font-bold text-sky-600">
+                                Total {sub.name}: {formatChileanPeso(subTotal)}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   )
                 })}
