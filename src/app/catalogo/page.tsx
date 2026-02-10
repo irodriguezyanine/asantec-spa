@@ -1,5 +1,6 @@
 import { ProductCard } from "@/components/ProductCard"
 import { getProducts } from "@/lib/products"
+import { getHidePrices } from "@/lib/settings"
 
 export const metadata = {
   title: "Catálogo | ASANTEC SPA",
@@ -7,7 +8,7 @@ export const metadata = {
 }
 
 export default async function CatalogoPage() {
-  const products = await getProducts()
+  const [products, hidePrices] = await Promise.all([getProducts(), getHidePrices()])
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <h1 className="text-3xl font-bold text-slate-800 mb-2">Catálogo de productos</h1>
@@ -16,7 +17,7 @@ export default async function CatalogoPage() {
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={product.id} product={product} hidePrice={hidePrices} />
         ))}
       </div>
     </div>

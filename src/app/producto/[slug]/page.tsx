@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { getProductBySlugSafe } from "@/lib/products"
+import { getHidePrices } from "@/lib/settings"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ProductoPage({ params }: PageProps) {
   const { slug } = await params
-  const product = await getProductBySlugSafe(slug)
+  const [product, hidePrices] = await Promise.all([getProductBySlugSafe(slug), getHidePrices()])
   if (!product) notFound()
 
   return (
@@ -59,7 +60,7 @@ export default async function ProductoPage({ params }: PageProps) {
         <div>
           <p className="text-sky-600 font-semibold uppercase tracking-wide">{product.brand}</p>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">{product.name}</h1>
-          <p className="text-3xl font-bold text-sky-600 mt-4">{product.priceFormatted}</p>
+          {!hidePrices && <p className="text-3xl font-bold text-sky-600 mt-4">{product.priceFormatted}</p>}
           <p className="text-slate-600 mt-4">{product.description}</p>
           {product.inStock === false && (
             <p className="text-amber-600 font-medium mt-2">Sin stock actualmente</p>

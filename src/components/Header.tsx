@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { Menu, X, LogIn, Search, Shield } from "lucide-react"
+import { PriceVisibilityToggle } from "./PriceVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { categories } from "@/data/products"
 
@@ -67,9 +68,12 @@ export function Header() {
               Nosotros
             </Link>
             {session ? (
-              <Link href="/admin/inventario" className="text-slate-700 hover:text-sky-600 font-medium transition">
-                Inventario
-              </Link>
+              <>
+                <Link href="/admin/inventario" className="text-slate-700 hover:text-sky-600 font-medium transition">
+                  Inventario
+                </Link>
+                <PriceVisibilityToggle />
+              </>
             ) : (
               <Link href="/contacto" className="text-slate-700 hover:text-sky-600 font-medium transition">
                 Contacto
@@ -162,9 +166,14 @@ export function Header() {
               Nosotros
             </Link>
             {session ? (
-              <Link href="/admin/inventario" className="py-2 text-slate-700" onClick={() => setMenuOpen(false)}>
-                Inventario
-              </Link>
+              <>
+                <Link href="/admin/inventario" className="py-2 text-slate-700" onClick={() => setMenuOpen(false)}>
+                  Inventario
+                </Link>
+                <div className="py-2 pl-4" onClick={() => setMenuOpen(false)}>
+                  <PriceVisibilityToggle />
+                </div>
+              </>
             ) : (
               <Link href="/contacto" className="py-2 text-slate-700" onClick={() => setMenuOpen(false)}>
                 Contacto

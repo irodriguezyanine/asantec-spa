@@ -6,9 +6,10 @@ import { cn } from "@/lib/utils"
 interface ProductCardProps {
   product: Product
   className?: string
+  hidePrice?: boolean
 }
 
-export function ProductCard({ product, className }: ProductCardProps) {
+export function ProductCard({ product, className, hidePrice }: ProductCardProps) {
   return (
     <Link
       href={`/producto/${product.slug}`}
@@ -43,7 +44,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         <h3 className="font-semibold text-slate-800 mt-1 line-clamp-2 group-hover:text-sky-600 transition">
           {product.name}
         </h3>
-        <p className="mt-2 text-lg font-bold text-sky-600">{product.priceFormatted}</p>
+        {!hidePrice && <p className="mt-2 text-lg font-bold text-sky-600">{product.priceFormatted}</p>}
         {product.inStock === false && (
           <p className="text-sm text-amber-600 mt-1">Sin stock</p>
         )}
