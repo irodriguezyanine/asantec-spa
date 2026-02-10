@@ -298,7 +298,7 @@ function ProductForm({
               <input
                 type="text"
                 inputMode="numeric"
-                value={price ? `$${price.toLocaleString("es-CL")}` : ""}
+                value={price ? `$${Number(price).toLocaleString("es-CL")}` : ""}
                 onChange={(e) => {
                   const raw = e.target.value.replace(/\D/g, "")
                   const num = parseInt(raw, 10) || 0
