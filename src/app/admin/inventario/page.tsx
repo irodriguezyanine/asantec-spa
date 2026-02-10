@@ -9,6 +9,7 @@ import {
   FolderTree,
   Plus,
   X,
+  Pencil,
 } from "lucide-react"
 import type { Product } from "@/types/product"
 import { AdminProductTable, type SortColumn, type SortDirection } from "@/components/AdminProductTable"
