@@ -62,7 +62,7 @@ export default async function ProductoPage({ params }: PageProps) {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">{product.name}</h1>
           {hidePrice ? (
             <a
-              href={`https://wa.me/56998661395?text=${encodeURIComponent(`Hola! Vengo de asantec.cl y me interesa cotizar: "${product.name}"`)}`}
+              href={`https://wa.me/56998661395?text=${encodeURIComponent(`Quiero cotizar este ${product.name} que vi en asantec.cl`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-block px-6 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition"

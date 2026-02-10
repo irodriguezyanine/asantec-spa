@@ -46,7 +46,7 @@ export function ProductCard({ product, className, hidePrice }: ProductCardProps)
         </h3>
         {hidePrice ? (
           <a
-            href={`https://wa.me/56998661395?text=${encodeURIComponent(`Hola! Vengo de asantec.cl y me interesa cotizar: "${product.name}"`)}`}
+            href={`https://wa.me/56998661395?text=${encodeURIComponent(`Quiero cotizar este ${product.name} que vi en asantec.cl`)}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
