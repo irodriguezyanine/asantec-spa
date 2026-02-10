@@ -66,7 +66,7 @@ export default async function ProductoPage({ params }: PageProps) {
           )}
           <div className="mt-6 flex flex-wrap gap-3">
             <a
-              href={`https://wa.me/56976488856?text=${encodeURIComponent(`Hola! Vengo de asantec.cl y estoy interesado en el modelo "${product.name}"`)}`}
+              href={`https://wa.me/56998661395?text=${encodeURIComponent(`Hola! Vengo de asantec.cl y estoy interesado en el modelo "${product.name}"`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 rounded-lg bg-sky-600 text-white font-semibold hover:bg-sky-700 transition inline-block"
