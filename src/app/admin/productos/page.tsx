@@ -94,7 +94,7 @@ export default function AdminProductosPage() {
                 <div className="w-16 h-16 rounded-lg bg-slate-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
                   {p.image ? (
                     <Image
-                      src={p.image.startsWith("/") ? p.image : `/${p.image}`}
+                      src={p.image.startsWith("http") || p.image.startsWith("/") ? p.image : `/${p.image}`}
                       alt={p.name}
                       width={64}
                       height={64}
@@ -318,7 +318,7 @@ function ProductForm({
               {image && (
                 <div className="mt-2 relative w-24 h-24 rounded-lg overflow-hidden bg-slate-100">
                   <Image
-                    src={image.startsWith("/") ? image : `/${image}`}
+                    src={image.startsWith("http") || image.startsWith("/") ? image : `/${image}`}
                     alt="Preview"
                     fill
                     className="object-contain"

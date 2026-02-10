@@ -194,7 +194,7 @@ export default function InventarioPage() {
                             <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
                               {p.image ? (
                                 <Image
-                                  src={p.image.startsWith("/") ? p.image : `/${p.image}`}
+                                  src={p.image.startsWith("http") || p.image.startsWith("/") ? p.image : `/${p.image}`}
                                   alt=""
                                   width={40}
                                   height={40}
