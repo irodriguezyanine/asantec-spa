@@ -5,6 +5,7 @@ import { categories, products } from "@/data/products"
 
 const ADMIN_USER = "jorgeignaciorb@gmail.com"
 const ADMIN_PASSWORD = "Patan123"
+const ADMIN_DISPLAY_NAME = "Jorge Ignacio"
 
 /**
  * Migra productos, categorías y crea el usuario administrador en MongoDB.
@@ -29,9 +30,15 @@ async function seed() {
       await usersCollection.insertOne({
         username: ADMIN_USER,
         password: hashedPassword,
+        displayName: ADMIN_DISPLAY_NAME,
         role: "admin",
         createdAt: new Date(),
       })
+    } else if (!(existingAdmin as { displayName?: string }).displayName) {
+      await usersCollection.updateOne(
+        { username: ADMIN_USER },
+        { $set: { displayName: ADMIN_DISPLAY_NAME } }
+      )
     }
 
     const catsCollection = db.collection("categories")

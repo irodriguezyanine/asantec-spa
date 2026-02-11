@@ -54,6 +54,20 @@ export default function AdminAnalyticsPage() {
     href: p.slug ? `/producto/${p.slug}` : undefined,
   }))
 
+  const chartTooltip = (props: { payload?: { value?: number }[]; active?: boolean; label?: string }) => {
+    const { payload, active, label } = props
+    if (!active || !payload?.length) return null
+    const value = payload[0]?.value ?? 0
+    return (
+      <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-lg">
+        <p className="text-sm font-medium text-slate-800">{label}</p>
+        <p className="text-sm text-slate-600">
+          Visitas: <span className="font-semibold text-slate-900">{value}</span>
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
       <div className="flex items-center gap-2 mb-6">
@@ -82,6 +96,7 @@ export default function AdminAnalyticsPage() {
               valueFormatter={(v: number) => String(v)}
               yAxisLabel="Visitas"
               yAxisWidth={36}
+              customTooltip={chartTooltip}
               className="h-72"
             />
           )}
