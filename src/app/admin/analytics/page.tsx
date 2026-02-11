@@ -79,7 +79,7 @@ export default function AdminAnalyticsPage() {
               categories={["visitas"]}
               colors={["sky"]}
               showLegend={false}
-              valueFormatter={(v) => `${v} visitas`}
+              valueFormatter={(v: number) => `${v} visitas`}
               className="h-72"
             />
           )}
@@ -93,7 +93,7 @@ export default function AdminAnalyticsPage() {
           {topProducts.length === 0 ? (
             <p className="text-slate-500 py-8 text-center">Aún no hay clics en productos.</p>
           ) : (
-            <BarList data={barListData} className="mt-2" valueFormatter={(v) => `${v} clics`} />
+            <BarList data={barListData} className="mt-2" valueFormatter={(v: number) => `${v} clics`} />
           )}
         </Card>
       </div>
