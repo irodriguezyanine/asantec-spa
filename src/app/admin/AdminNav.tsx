@@ -17,6 +17,12 @@ export function AdminNav() {
           <Link href="/admin/productos" className="text-slate-600 hover:text-sky-600 text-sm">
             Productos
           </Link>
+          <Link href="/admin/seo" className="text-slate-600 hover:text-sky-600 text-sm">
+            SEO
+          </Link>
+          <Link href="/admin/analytics" className="text-slate-600 hover:text-sky-600 text-sm">
+            Analíticas
+          </Link>
           <Link href="/" className="text-slate-600 hover:text-sky-600 text-sm">
             Ver sitio
           </Link>

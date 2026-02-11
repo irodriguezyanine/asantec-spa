@@ -5,6 +5,19 @@ import Image from "next/image"
 import type { Product } from "@/types/product"
 import { cn } from "@/lib/utils"
 
+function trackProductClick(product: Product) {
+  fetch("/api/analytics/event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "product_click",
+      productId: product.id,
+      productName: product.name,
+      slug: product.slug,
+    }),
+  }).catch(() => {})
+}
+
 interface ProductCardProps {
   product: Product
   className?: string
@@ -15,6 +28,7 @@ export function ProductCard({ product, className, hidePrice }: ProductCardProps)
   return (
     <Link
       href={`/producto/${product.slug}`}
+      onClick={() => trackProductClick(product)}
       className={cn(
         "group block bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg hover:border-sky-200 transition-all duration-200",
         className

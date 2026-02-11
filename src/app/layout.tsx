@@ -5,29 +5,26 @@ import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { WhatsAppButton } from "@/components/WhatsAppButton"
 import { SessionProvider } from "@/components/SessionProvider"
+import { AnalyticsTracker } from "@/components/AnalyticsTracker"
 import { getCategoriesSafe } from "@/lib/categories"
+import { getSeoConfig } from "@/lib/seo"
 
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
 })
 
-export const metadata: Metadata = {
-  title: "ASANTEC SPA | Tu socio tecnológico - Soluciones informáticas en Chile",
-  description:
-    "Más de 10 años ofreciendo hardware, computadores, monitores, periféricos y soluciones tecnológicas para empresas, colegios, universidades y particulares. Entrega en todo Chile.",
-  keywords: [
-    "tecnología Chile",
-    "computadores",
-    "hardware",
-    "venta empresas",
-    "soluciones informáticas",
-    "ASANTEC",
-  ],
-  icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png",
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoConfig()
+  return {
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
+    icons: {
+      icon: "/favicon.png",
+      apple: "/favicon.png",
+    },
+  }
 }
 
 export default async function RootLayout({
@@ -41,6 +38,7 @@ export default async function RootLayout({
     <html lang="es">
       <body className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}>
         <SessionProvider>
+          <AnalyticsTracker />
           <Header categories={mainCategories} />
           <main className="flex-1">{children}</main>
           <Footer categories={mainCategories} />
