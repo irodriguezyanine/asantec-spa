@@ -54,10 +54,12 @@ export default function AdminAnalyticsPage() {
     href: p.slug ? `/producto/${p.slug}` : undefined,
   }))
 
-  const chartTooltip = (props: { payload?: { value?: number }[]; active?: boolean; label?: string }) => {
+  const chartTooltip = (props: { payload?: unknown[]; active?: boolean; label?: string }) => {
     const { payload, active, label } = props
     if (!active || !payload?.length) return null
-    const value = payload[0]?.value ?? 0
+    const item = payload[0] as { value?: string | number | (string | number)[] } | undefined
+    const raw = item?.value
+    const value = typeof raw === "number" ? raw : Array.isArray(raw) ? Number(raw[0]) : Number(raw) || 0
     return (
       <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-lg">
         <p className="text-sm font-medium text-slate-800">{label}</p>
@@ -96,7 +98,7 @@ export default function AdminAnalyticsPage() {
               valueFormatter={(v: number) => String(v)}
               yAxisLabel="Visitas"
               yAxisWidth={36}
-              customTooltip={chartTooltip}
+              customTooltip={chartTooltip as never}
               className="h-72"
             />
           )}
