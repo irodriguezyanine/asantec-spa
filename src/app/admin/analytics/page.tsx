@@ -79,7 +79,9 @@ export default function AdminAnalyticsPage() {
               categories={["visitas"]}
               colors={["sky"]}
               showLegend={false}
-              valueFormatter={(v: number) => `${v} visitas`}
+              valueFormatter={(v: number) => String(v)}
+              yAxisLabel="Visitas"
+              yAxisWidth={36}
               className="h-72"
             />
           )}
