@@ -31,14 +31,34 @@ async function seed() {
         username: ADMIN_USER,
         password: hashedPassword,
         displayName: ADMIN_DISPLAY_NAME,
+        nombre: "Jorge",
+        apellidoPaterno: "Ignacio",
+        apellidoMaterno: "",
+        rut: "",
+        telefono: "",
+        cargo: "Administrador",
         role: "admin",
         createdAt: new Date(),
       })
-    } else if (!(existingAdmin as { displayName?: string }).displayName) {
-      await usersCollection.updateOne(
-        { username: ADMIN_USER },
-        { $set: { displayName: ADMIN_DISPLAY_NAME } }
-      )
+    } else {
+      const updates: Record<string, unknown> = {}
+      if (!(existingAdmin as { displayName?: string }).displayName) {
+        updates.displayName = ADMIN_DISPLAY_NAME
+      }
+      if ((existingAdmin as { nombre?: string }).nombre === undefined) {
+        updates.nombre = "Jorge"
+        updates.apellidoPaterno = "Ignacio"
+        updates.apellidoMaterno = ""
+        updates.rut = ""
+        updates.telefono = ""
+        updates.cargo = "Administrador"
+      }
+      if (Object.keys(updates).length > 0) {
+        await usersCollection.updateOne(
+          { username: ADMIN_USER },
+          { $set: updates }
+        )
+      }
     }
 
     const catsCollection = db.collection("categories")
