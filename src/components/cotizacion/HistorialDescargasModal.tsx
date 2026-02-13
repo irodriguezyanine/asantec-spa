@@ -122,7 +122,7 @@ export function HistorialDescargasModal({
                       <span className="text-sm text-slate-800 font-medium cursor-help underline decoration-dotted decoration-slate-400 underline-offset-2">
                         {getPrimerItemTexto(d.items)}
                       </span>
-                      {d.items?.length > 0 && (
+                      {(d.items?.length ?? 0) > 0 && (
                         <div className="absolute left-0 top-full pt-2 z-[60] hidden group-hover:block w-[min(90vw,400px)]">
                           <div className="bg-white border border-slate-200 rounded-lg shadow-xl p-3 text-left">
                             <p className="text-xs font-semibold text-slate-600 mb-2 pb-1 border-b border-slate-100">
