@@ -4,10 +4,17 @@ import { authOptions } from "@/lib/auth"
 import { getDb } from "@/lib/db"
 import { ObjectId } from "mongodb"
 
+export interface CotizacionItemSnapshot {
+  cantidad: number
+  descripcion: string
+  valorUnit: number
+}
+
 export interface CotizacionDescarga {
   id: string
   cotizacionId: string
   fechaDescarga: string
+  items: CotizacionItemSnapshot[]
 }
 
 export async function GET(
@@ -32,11 +39,20 @@ export async function GET(
       .sort({ fechaDescarga: -1 })
       .toArray()
 
-    const descargas: CotizacionDescarga[] = docs.map((d) => ({
-      id: (d._id as { toString: () => string }).toString(),
-      cotizacionId: d.cotizacionId as string,
-      fechaDescarga: (d.fechaDescarga as Date)?.toISOString?.() ?? "",
-    }))
+    const descargas: CotizacionDescarga[] = docs.map((d) => {
+      const snapshot = d.cotizacionSnapshot as { items?: { cantidad: number; descripcion: string; valorUnit: number }[] } | null
+      const items = (snapshot?.items || []).map((i) => ({
+        cantidad: i.cantidad ?? 0,
+        descripcion: i.descripcion ?? "",
+        valorUnit: i.valorUnit ?? 0,
+      }))
+      return {
+        id: (d._id as { toString: () => string }).toString(),
+        cotizacionId: d.cotizacionId as string,
+        fechaDescarga: (d.fechaDescarga as Date)?.toISOString?.() ?? "",
+        items,
+      }
+    })
 
     return NextResponse.json(descargas)
   } catch (error) {
