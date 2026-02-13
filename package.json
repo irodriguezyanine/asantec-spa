@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^3.4.4",
     "@tremor/react": "^3.18.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",

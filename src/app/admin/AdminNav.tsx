@@ -3,11 +3,12 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
-import { Menu, X, ChevronDown, Home, Package, FolderTree, Search, BarChart3, Globe, LogOut } from "lucide-react"
+import { Menu, X, ChevronDown, Home, Package, FolderTree, Search, BarChart3, Globe, LogOut, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/admin", label: "Inicio", icon: Home },
+  { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText },
   { href: "/admin/inventario", label: "Inventario", icon: FolderTree },
   { href: "/admin/productos", label: "Productos", icon: Package },
   { href: "/admin/seo", label: "SEO", icon: Search },
