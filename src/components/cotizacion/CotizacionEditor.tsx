@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Download, Save, ChevronDown, ChevronUp, Package } from "lucide-react"
+import { Plus, Trash2, Download, Save, ChevronDown, ChevronUp, Package, History } from "lucide-react"
 import type { Cotizacion, CotizacionItem, CotizacionCliente, CotizacionEmpresa } from "@/types/cotizacion"
 import { EMPRESA_DEFAULT, COTIZACION_DEFAULTS } from "@/types/cotizacion"
 import type { Product } from "@/types/product"
 import { ClienteAutocomplete } from "./ClienteAutocomplete"
+import { HistorialDescargasModal } from "./HistorialDescargasModal"
 
 interface CotizacionEditorProps {
   cotizacion: Partial<Cotizacion>
@@ -72,6 +73,12 @@ export function CotizacionEditor({
   const [showProductPicker, setShowProductPicker] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [productSearch, setProductSearch] = useState("")
+  const [clienteSelectedFromList, setClienteSelectedFromList] = useState(false)
+  const [showHistorialDropdown, setShowHistorialDropdown] = useState(false)
+  const [historialCotizaciones, setHistorialCotizaciones] = useState<Cotizacion[]>([])
+  const [loadingHistorial, setLoadingHistorial] = useState(false)
+  const [showHistorialDescargas, setShowHistorialDescargas] = useState(false)
+  const historialRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (showProductPicker) {
@@ -116,6 +123,51 @@ export function CotizacionEditor({
   function removeItem(id: string) {
     setItems((prev) => prev.filter((it) => it.id !== id))
   }
+
+  async function loadHistorial() {
+    if (!cliente.empresa?.trim() && !cliente.rut?.trim()) return
+    setLoadingHistorial(true)
+    try {
+      const params = new URLSearchParams({ historial: "true" })
+      if (cliente.empresa?.trim()) params.set("empresa", cliente.empresa.trim())
+      if (cliente.rut?.trim()) params.set("rut", cliente.rut.trim())
+      const res = await fetch(`/api/cotizaciones?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        setHistorialCotizaciones(data)
+        setShowHistorialDropdown(true)
+      }
+    } catch {
+      setHistorialCotizaciones([])
+    } finally {
+      setLoadingHistorial(false)
+    }
+  }
+
+  function aplicarCotizacionAnterior(c: Cotizacion) {
+    if (c.items?.length) {
+      setItems(
+        c.items.map((i) => ({
+          ...i,
+          id: generateId(),
+          valorTotal: i.cantidad * i.valorUnit,
+        }))
+      )
+    }
+    setShowHistorialDropdown(false)
+  }
+
+  useEffect(() => {
+    function handleClickOutsideHistorial(e: MouseEvent) {
+      if (historialRef.current && !historialRef.current.contains(e.target as Node)) {
+        setShowHistorialDropdown(false)
+      }
+    }
+    if (showHistorialDropdown) {
+      document.addEventListener("mousedown", handleClickOutsideHistorial)
+      return () => document.removeEventListener("mousedown", handleClickOutsideHistorial)
+    }
+  }, [showHistorialDropdown])
 
   function addProductFromCatalog(p: Product) {
     setItems((prev) => [
@@ -198,10 +250,59 @@ export function CotizacionEditor({
             <ClienteAutocomplete
               value={cliente}
               onChange={setCliente}
+              onClienteSelectedFromList={() => setClienteSelectedFromList(true)}
+              onClienteManuallyChanged={() => setClienteSelectedFromList(false)}
             />
           </div>
         )}
       </section>
+
+      {/* Historial de licitaciones - solo si cliente fue seleccionado de la lista */}
+      {clienteSelectedFromList && (cliente.empresa?.trim() || cliente.rut?.trim()) && (
+        <div ref={historialRef} className="relative">
+          <button
+            type="button"
+            onClick={loadHistorial}
+            disabled={loadingHistorial}
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl border-2 border-dashed border-sky-300 bg-sky-50/50 text-sky-700 font-medium hover:bg-sky-100 hover:border-sky-400 transition disabled:opacity-50"
+          >
+            <History className="w-5 h-5" />
+            {loadingHistorial ? "Cargando..." : "Historial de licitaciones"}
+          </button>
+          {showHistorialDropdown && historialCotizaciones.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+              <div className="p-2 border-b border-slate-100 bg-slate-50">
+                <p className="text-xs font-medium text-slate-600">
+                  Últimas 5 cotizaciones (clic para copiar items)
+                </p>
+              </div>
+              <ul className="max-h-64 overflow-y-auto py-1">
+                {historialCotizaciones.map((c) => (
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      onClick={() => aplicarCotizacionAnterior(c)}
+                      className="w-full text-left px-4 py-3 hover:bg-sky-50 transition flex justify-between items-center"
+                    >
+                      <span className="font-medium text-slate-800">
+                        Nº {c.numero} — {c.fecha}
+                      </span>
+                      <span className="text-sm text-sky-600 font-semibold">
+                        ${c.total?.toLocaleString("es-CL")}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {showHistorialDropdown && historialCotizaciones.length === 0 && !loadingHistorial && (
+            <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white border border-slate-200 rounded-xl shadow-lg p-4 text-center text-slate-500 text-sm">
+              No hay cotizaciones anteriores para este cliente
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Número, fecha y parámetros */}
       <section className="bg-white rounded-xl border border-slate-200 p-6">
@@ -652,15 +753,25 @@ export function CotizacionEditor({
           Cancelar
         </button>
         {!isNew && cotizacionId && (
-          <a
-            href={`/api/cotizaciones/${cotizacionId}/export-pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition"
-          >
-            <Download className="w-5 h-5" />
-            Descargar PDF
-          </a>
+          <>
+            <a
+              href={`/api/cotizaciones/${cotizacionId}/export-pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition"
+            >
+              <Download className="w-5 h-5" />
+              Descargar PDF
+            </a>
+            <button
+              type="button"
+              onClick={() => setShowHistorialDescargas(true)}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition"
+            >
+              <History className="w-5 h-5" />
+              Historial descargas
+            </button>
+          </>
         )}
         <Link
           href="/admin/cotizaciones"
@@ -669,6 +780,14 @@ export function CotizacionEditor({
           ← Volver a cotizaciones
         </Link>
       </div>
+
+      {showHistorialDescargas && cotizacionId && (
+        <HistorialDescargasModal
+          cotizacionId={cotizacionId}
+          cotizacionNumero={numero}
+          onClose={() => setShowHistorialDescargas(false)}
+        />
+      )}
     </form>
   )
 }

@@ -38,16 +38,34 @@ function formatCotizacion(doc: Record<string, unknown>): Cotizacion {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
+    const { searchParams } = new URL(request.url)
+    const empresa = searchParams.get("empresa")?.trim()
+    const rut = searchParams.get("rut")?.trim()
+    const historial = searchParams.get("historial") === "true"
+
     const db = await getDb()
     const collection = db.collection("cotizaciones")
-    const docs = await collection.find({}).sort({ createdAt: -1 }).toArray()
+
+    let query: Record<string, unknown> = {}
+    if (historial && (empresa || rut)) {
+      const and: Record<string, unknown>[] = []
+      if (empresa) and.push({ "cliente.empresa": { $regex: new RegExp(`^${empresa.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } })
+      if (rut) and.push({ "cliente.rut": { $regex: new RegExp(`^${(rut || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } })
+      if (and.length > 0) query.$and = and
+    }
+
+    const limit = historial ? 5 : 0
+    const docs = limit
+      ? await collection.find(query).sort({ fecha: -1, createdAt: -1 }).limit(limit).toArray()
+      : await collection.find(query).sort({ createdAt: -1 }).toArray()
+
     const cotizaciones = docs.map((d) => formatCotizacion(d as Record<string, unknown>))
     return NextResponse.json(cotizaciones)
   } catch (error) {

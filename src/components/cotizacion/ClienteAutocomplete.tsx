@@ -7,12 +7,16 @@ import type { Empresa, Contacto } from "@/types/cliente"
 interface ClienteAutocompleteProps {
   value: CotizacionCliente
   onChange: (cliente: CotizacionCliente) => void
+  onClienteSelectedFromList?: (empresa: string, rut: string) => void
+  onClienteManuallyChanged?: () => void
   disabled?: boolean
 }
 
 export function ClienteAutocomplete({
   value,
   onChange,
+  onClienteSelectedFromList,
+  onClienteManuallyChanged,
   disabled,
 }: ClienteAutocompleteProps) {
   const [empresas, setEmpresas] = useState<Empresa[]>([])
@@ -112,6 +116,7 @@ export function ClienteAutocomplete({
     setSelectedEmpresaId(e.id)
     setShowEmpresaDropdown(false)
     setShowRutDropdown(false)
+    onClienteSelectedFromList?.(e.nombre, e.rut)
   }
 
   function selectContacto(c: Contacto) {
@@ -127,6 +132,7 @@ export function ClienteAutocomplete({
   function handleEmpresaChange(v: string) {
     onChange({ ...value, empresa: v })
     setSelectedEmpresaId(null)
+    onClienteManuallyChanged?.()
     if (v.length >= 2) {
       fetchEmpresas(v)
       setShowEmpresaDropdown(true)
@@ -139,6 +145,7 @@ export function ClienteAutocomplete({
   function handleRutChange(v: string) {
     onChange({ ...value, rut: v })
     setSelectedEmpresaId(null)
+    onClienteManuallyChanged?.()
     if (v.length >= 2) {
       fetchEmpresas(v)
       setShowRutDropdown(true)

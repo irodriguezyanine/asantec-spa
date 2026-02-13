@@ -95,6 +95,17 @@ export async function GET(
     // CotizacionPdfDocument retorna <Document>; assertion para compatibilidad con tipos de @react-pdf
     const buffer = await renderToBuffer(pdfDoc as Parameters<typeof renderToBuffer>[0])
 
+    // Registrar descarga en historial (snapshot para poder regenerar versiones anteriores)
+    try {
+      await db.collection("cotizacion_descargas").insertOne({
+        cotizacionId: id,
+        fechaDescarga: new Date(),
+        cotizacionSnapshot: cotizacion,
+      })
+    } catch (err) {
+      console.error("Error al registrar descarga:", err)
+    }
+
     const [y, m, d] = (cotizacion.fecha || "").split("-")
     const fechaPart = y && m && d ? `${y.slice(-2)}${m}${d}` : "000000"
     const empresaPart = (cotizacion.cliente?.empresa || "").trim()

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import {
   Search,
@@ -9,8 +10,10 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  History,
 } from "lucide-react"
 import type { Cotizacion } from "@/types/cotizacion"
+import { HistorialDescargasModal } from "@/components/cotizacion/HistorialDescargasModal"
 
 export type CotizacionSortColumn = "numero" | "fecha" | "cliente" | "total" | null
 export type SortDirection = "asc" | "desc"
@@ -74,6 +77,9 @@ export function AdminCotizacionTable({
   onDelete,
   emptyMessage = "No hay cotizaciones.",
 }: AdminCotizacionTableProps) {
+  const [historialCotizacionId, setHistorialCotizacionId] = useState<string | null>(null)
+  const [historialCotizacionNumero, setHistorialCotizacionNumero] = useState<string>("")
+
   const clientesUnicos = Array.from(
     new Set(
       cotizaciones
@@ -261,6 +267,17 @@ export function AdminCotizacionTable({
                         >
                           <Download className="w-4 h-4" />
                         </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setHistorialCotizacionId(c.id)
+                            setHistorialCotizacionNumero(c.numero || "")
+                          }}
+                          className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-sky-600 transition"
+                          title="Historial de descargas"
+                        >
+                          <History className="w-4 h-4" />
+                        </button>
                         <Link
                           href={`/admin/cotizaciones/${c.id}`}
                           className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-sky-600 transition"
@@ -284,6 +301,17 @@ export function AdminCotizacionTable({
           </div>
         )}
       </div>
+
+      {historialCotizacionId && (
+        <HistorialDescargasModal
+          cotizacionId={historialCotizacionId}
+          cotizacionNumero={historialCotizacionNumero}
+          onClose={() => {
+            setHistorialCotizacionId(null)
+            setHistorialCotizacionNumero("")
+          }}
+        />
+      )}
     </>
   )
 }
