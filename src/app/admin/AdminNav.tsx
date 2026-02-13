@@ -3,17 +3,19 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
-import { Menu, X, ChevronDown, Home, Package, FolderTree, Search, BarChart3, Globe, LogOut, FileText } from "lucide-react"
+import { signOut } from "next-auth/react"
+import { Menu, X, ChevronDown, Home, Package, FolderTree, Search, BarChart3, LogOut, FileText, Users, UserCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
+  { href: "/admin/perfil", label: "Editar Perfil", icon: UserCircle },
   { href: "/admin", label: "Inicio", icon: Home },
   { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText },
   { href: "/admin/inventario", label: "Inventario", icon: FolderTree },
   { href: "/admin/productos", label: "Productos", icon: Package },
   { href: "/admin/seo", label: "SEO", icon: Search },
   { href: "/admin/analytics", label: "Analíticas", icon: BarChart3 },
-  { href: "/", label: "Ver sitio", icon: Globe },
+  { href: "/admin/nosotros", label: "Editar Nosotros", icon: Users },
 ]
 
 export function AdminNav() {
@@ -60,12 +62,13 @@ export function AdminNav() {
                 {label}
               </Link>
             ))}
-            <a
-              href="/api/auth/signout"
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
               className="text-sm text-slate-600 hover:text-red-600 whitespace-nowrap transition"
             >
               Cerrar sesión
-            </a>
+            </button>
           </nav>
 
           {/* Móvil: botón que abre lista desplegable */}
@@ -106,14 +109,17 @@ export function AdminNav() {
                   </Link>
                 ))}
                 <div className="border-t border-slate-100 my-2" />
-                <a
-                  href="/api/auth/signout"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    signOut({ callbackUrl: "/" })
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition text-left"
                 >
                   <LogOut className="w-4 h-4 shrink-0" />
                   Cerrar sesión
-                </a>
+                </button>
               </div>
             )}
           </div>

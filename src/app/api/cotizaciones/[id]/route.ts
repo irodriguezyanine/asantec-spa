@@ -19,11 +19,14 @@ function formatCotizacion(doc: Record<string, unknown>): Cotizacion {
       descripcion: i.descripcion as string,
       valorUnit: i.valorUnit as number,
       valorTotal: i.valorTotal as number,
+      descuentoPorcentaje: i.descuentoPorcentaje as number | undefined,
     })),
     totalNeto: doc.totalNeto as number,
     ivaPorcentaje: doc.ivaPorcentaje as number,
     iva: doc.iva as number,
     total: doc.total as number,
+    descuentoTotalPorcentaje: doc.descuentoTotalPorcentaje as number | undefined,
+    despacho: doc.despacho as Cotizacion["despacho"],
     tasaCambio: doc.tasaCambio as string,
     validezDiasHabiles: doc.validezDiasHabiles as number,
     empresa: doc.empresa as Cotizacion["empresa"],
@@ -86,18 +89,30 @@ export async function PUT(
     const db = await getDb()
     const collection = db.collection("cotizaciones")
 
-    const items = (body.items || []).map((i: { id?: string; cantidad: number; descripcion: string; valorUnit: number }) => ({
-      id: i.id || crypto.randomUUID(),
-      cantidad: Number(i.cantidad) || 1,
-      descripcion: i.descripcion || "",
-      valorUnit: Number(i.valorUnit) || 0,
-      valorTotal: (Number(i.cantidad) || 1) * (Number(i.valorUnit) || 0),
-    }))
+    const items = (body.items || []).map((i: { id?: string; cantidad: number; descripcion: string; valorUnit: number; descuentoPorcentaje?: number }) => {
+      const cantidad = Number(i.cantidad) || 1
+      const valorUnit = Number(i.valorUnit) || 0
+      const desc = (Number(i.descuentoPorcentaje) || 0) / 100
+      const valorTotal = Math.round(cantidad * valorUnit * (1 - desc))
+      return {
+        id: i.id || crypto.randomUUID(),
+        cantidad,
+        descripcion: i.descripcion || "",
+        valorUnit,
+        valorTotal,
+        descuentoPorcentaje: i.descuentoPorcentaje,
+      }
+    })
 
-    const totalNeto = items.reduce((s: number, i: { valorTotal: number }) => s + i.valorTotal, 0)
+    const subtotalItems = items.reduce((s: number, i: { valorTotal: number }) => s + i.valorTotal, 0)
+    const descuentoTotalPct = Number(body.descuentoTotalPorcentaje) || 0
+    const totalNeto = Math.round(subtotalItems * (1 - descuentoTotalPct / 100))
     const ivaPorcentaje = Number(body.ivaPorcentaje) ?? 19
     const iva = Math.round(totalNeto * (ivaPorcentaje / 100))
-    const total = totalNeto + iva
+    const despachoValor = (body.despacho as { activo?: boolean; valor?: number })?.activo
+      ? Number((body.despacho as { valor?: number }).valor) || 0
+      : 0
+    const total = totalNeto + iva + despachoValor
 
     const cliente = body.cliente || {}
     if (cliente.empresa?.trim() || cliente.rut?.trim()) {
@@ -125,6 +140,8 @@ export async function PUT(
       ivaPorcentaje,
       iva,
       total,
+      descuentoTotalPorcentaje: body.descuentoTotalPorcentaje,
+      despacho: body.despacho,
       tasaCambio: body.tasaCambio,
       validezDiasHabiles: body.validezDiasHabiles,
       empresa: body.empresa,

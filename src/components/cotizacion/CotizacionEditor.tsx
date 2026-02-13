@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Download, Save, ChevronDown, ChevronUp, Package, History } from "lucide-react"
-import type { Cotizacion, CotizacionItem, CotizacionCliente, CotizacionEmpresa } from "@/types/cotizacion"
+import { Plus, Trash2, Download, Save, ChevronDown, ChevronUp, Package, History, Percent, Truck } from "lucide-react"
+import type { Cotizacion, CotizacionItem, CotizacionCliente, CotizacionEmpresa, CotizacionDespacho } from "@/types/cotizacion"
 import { EMPRESA_DEFAULT, COTIZACION_DEFAULTS } from "@/types/cotizacion"
 import type { Product } from "@/types/product"
 import { ClienteAutocomplete } from "./ClienteAutocomplete"
@@ -78,7 +78,25 @@ export function CotizacionEditor({
   const [historialCotizaciones, setHistorialCotizaciones] = useState<Cotizacion[]>([])
   const [loadingHistorial, setLoadingHistorial] = useState(false)
   const [showHistorialDescargas, setShowHistorialDescargas] = useState(false)
+  const [showDescuentoDropdown, setShowDescuentoDropdown] = useState(false)
+  const [showDescuentoAProducto, setShowDescuentoAProducto] = useState(false)
+  const [showDescuentoAlTotal, setShowDescuentoAlTotal] = useState(false)
+  const [descuentoItemId, setDescuentoItemId] = useState<string | null>(null)
+  const [descuentoPorcentajeInput, setDescuentoPorcentajeInput] = useState("")
+  const [descuentoTotalInput, setDescuentoTotalInput] = useState("")
+  const [descuentoTotalPorcentaje, setDescuentoTotalPorcentaje] = useState(
+    (initial as { descuentoTotalPorcentaje?: number }).descuentoTotalPorcentaje ?? 0
+  )
+  const [despacho, setDespacho] = useState<CotizacionDespacho>(
+    (initial as { despacho?: CotizacionDespacho }).despacho ?? {
+      activo: false,
+      item: "",
+      direccion: "",
+      valor: 0,
+    }
+  )
   const historialRef = useRef<HTMLDivElement>(null)
+  const descuentoRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (showProductPicker) {
@@ -88,9 +106,15 @@ export function CotizacionEditor({
     }
   }, [showProductPicker])
 
-  const totalNeto = items.reduce((s, i) => s + i.valorTotal, 0)
+  const subtotalItems = items.reduce((s, i) => {
+    const bruto = i.cantidad * i.valorUnit
+    const desc = (i.descuentoPorcentaje ?? 0) / 100
+    return s + bruto * (1 - desc)
+  }, 0)
+  const totalNeto = Math.round(subtotalItems * (1 - (descuentoTotalPorcentaje || 0) / 100))
   const iva = Math.round(totalNeto * (ivaPorcentaje / 100))
-  const total = totalNeto + iva
+  const valorDespacho = despacho.activo ? despacho.valor : 0
+  const total = totalNeto + iva + valorDespacho
 
   function addItem() {
     setItems((prev) => [
@@ -110,10 +134,12 @@ export function CotizacionEditor({
       prev.map((it) => {
         if (it.id !== id) return it
         const next = { ...it, [field]: value }
-        if (field === "cantidad" || field === "valorUnit") {
-          next.valorTotal =
+        if (field === "cantidad" || field === "valorUnit" || field === "descuentoPorcentaje") {
+          const bruto =
             (typeof next.cantidad === "number" ? next.cantidad : 1) *
             (typeof next.valorUnit === "number" ? next.valorUnit : 0)
+          const desc = (next.descuentoPorcentaje ?? 0) / 100
+          next.valorTotal = Math.round(bruto * (1 - desc))
         }
         return next
       })
@@ -147,11 +173,15 @@ export function CotizacionEditor({
   function aplicarCotizacionAnterior(c: Cotizacion) {
     if (c.items?.length) {
       setItems(
-        c.items.map((i) => ({
-          ...i,
-          id: generateId(),
-          valorTotal: i.cantidad * i.valorUnit,
-        }))
+        c.items.map((i) => {
+          const bruto = i.cantidad * i.valorUnit
+          const desc = (i.descuentoPorcentaje ?? 0) / 100
+          return {
+            ...i,
+            id: generateId(),
+            valorTotal: Math.round(bruto * (1 - desc)),
+          }
+        })
       )
     }
     setShowHistorialDropdown(false)
@@ -168,6 +198,41 @@ export function CotizacionEditor({
       return () => document.removeEventListener("mousedown", handleClickOutsideHistorial)
     }
   }, [showHistorialDropdown])
+
+  useEffect(() => {
+    function handleClickOutsideDescuento(e: MouseEvent) {
+      if (descuentoRef.current && !descuentoRef.current.contains(e.target as Node)) {
+        setShowDescuentoDropdown(false)
+        setShowDescuentoAProducto(false)
+        setShowDescuentoAlTotal(false)
+      }
+    }
+    if (showDescuentoDropdown || showDescuentoAProducto || showDescuentoAlTotal) {
+      document.addEventListener("mousedown", handleClickOutsideDescuento)
+      return () => document.removeEventListener("mousedown", handleClickOutsideDescuento)
+    }
+  }, [showDescuentoDropdown, showDescuentoAProducto, showDescuentoAlTotal])
+
+  function aplicarDescuentoAProducto() {
+    const pct = parseInt(descuentoPorcentajeInput, 10)
+    if (descuentoItemId && !isNaN(pct) && pct >= 0 && pct <= 100) {
+      updateItem(descuentoItemId, "descuentoPorcentaje", pct)
+      setDescuentoPorcentajeInput("")
+      setDescuentoItemId(null)
+      setShowDescuentoAProducto(false)
+      setShowDescuentoDropdown(false)
+    }
+  }
+
+  function aplicarDescuentoAlTotal() {
+    const pct = parseInt(descuentoTotalInput, 10)
+    if (!isNaN(pct) && pct >= 0 && pct <= 100) {
+      setDescuentoTotalPorcentaje(pct)
+      setDescuentoTotalInput("")
+      setShowDescuentoAlTotal(false)
+      setShowDescuentoDropdown(false)
+    }
+  }
 
   function addProductFromCatalog(p: Product) {
     setItems((prev) => [
@@ -195,10 +260,11 @@ export function CotizacionEditor({
     e.preventDefault()
     setSaving(true)
     try {
-      const itemsWithTotals = items.map((i) => ({
-        ...i,
-        valorTotal: i.cantidad * i.valorUnit,
-      }))
+      const itemsWithTotals = items.map((i) => {
+        const bruto = i.cantidad * i.valorUnit
+        const desc = (i.descuentoPorcentaje ?? 0) / 100
+        return { ...i, valorTotal: Math.round(bruto * (1 - desc)) }
+      })
       await onSave({
         numero,
         fecha,
@@ -208,6 +274,8 @@ export function CotizacionEditor({
         ivaPorcentaje,
         iva,
         total,
+        descuentoTotalPorcentaje: descuentoTotalPorcentaje || undefined,
+        despacho: despacho.activo ? despacho : undefined,
         tasaCambio,
         validezDiasHabiles,
         empresa,
@@ -383,6 +451,7 @@ export function CotizacionEditor({
                     <th className="text-left py-2 pr-2 w-20">Cant.</th>
                     <th className="text-left py-2 pr-2">Descripción</th>
                     <th className="text-right py-2 pr-2 w-28">Valor Unit. $</th>
+                    <th className="text-right py-2 pr-2 w-16">Desc. %</th>
                     <th className="text-right py-2 pr-2 w-28">Total $</th>
                     <th className="w-10" />
                   </tr>
@@ -432,8 +501,22 @@ export function CotizacionEditor({
                           className="w-full text-right px-2 py-1 rounded border border-slate-300"
                         />
                       </td>
+                      <td className="py-2 pr-2 text-right">
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={item.descuentoPorcentaje ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value
+                            updateItem(item.id, "descuentoPorcentaje", v === "" ? 0 : parseInt(v, 10) || 0)
+                          }}
+                          placeholder="—"
+                          className="w-14 text-right px-2 py-1 rounded border border-slate-300 text-amber-600"
+                        />
+                      </td>
                       <td className="py-2 pr-2 text-right font-medium">
-                        {formatPrice(item.cantidad * item.valorUnit)}
+                        {formatPrice(item.valorTotal)}
                       </td>
                       <td>
                         <button
@@ -449,7 +532,7 @@ export function CotizacionEditor({
                 </tbody>
               </table>
             </div>
-            <div className="mt-4 flex flex-wrap gap-4">
+            <div className="mt-4 flex flex-wrap gap-4 items-center">
               <button
                 type="button"
                 onClick={addItem}
@@ -466,6 +549,101 @@ export function CotizacionEditor({
                 <Package className="w-4 h-4" />
                 Agregar desde catálogo
               </button>
+              <div ref={descuentoRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowDescuentoDropdown(!showDescuentoDropdown)}
+                  className="flex items-center gap-2 text-amber-600 hover:text-amber-700 font-medium"
+                >
+                  <Percent className="w-4 h-4" />
+                  Agregar descuento
+                </button>
+                {showDescuentoDropdown && (
+                  <div className="absolute left-0 top-full mt-1 z-50 w-56 bg-white border border-slate-200 rounded-lg shadow-lg py-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDescuentoDropdown(false)
+                        setShowDescuentoAProducto(true)
+                        setShowDescuentoAlTotal(false)
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm"
+                    >
+                      A un producto
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDescuentoDropdown(false)
+                        setShowDescuentoAlTotal(true)
+                        setShowDescuentoAProducto(false)
+                        setDescuentoTotalInput(String(descuentoTotalPorcentaje || ""))
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm"
+                    >
+                      Al total
+                    </button>
+                  </div>
+                )}
+                {showDescuentoAProducto && (
+                  <div className="absolute left-0 top-full mt-2 z-50 w-72 bg-white border border-slate-200 rounded-xl shadow-xl p-4">
+                    <h4 className="font-medium text-slate-800 mb-3">Descuento a un producto</h4>
+                    <select
+                      value={descuentoItemId ?? ""}
+                      onChange={(e) => setDescuentoItemId(e.target.value || null)}
+                      className="w-full mb-3 px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                    >
+                      <option value="">Seleccionar item</option>
+                      {items.map((it) => (
+                        <option key={it.id} value={it.id}>
+                          {it.cantidad} {it.descripcion || "Sin descripción"} — ${(it.cantidad * it.valorUnit).toLocaleString("es-CL")}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="% descuento"
+                        value={descuentoPorcentajeInput}
+                        onChange={(e) => setDescuentoPorcentajeInput(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={aplicarDescuentoAProducto}
+                        className="px-4 py-2 rounded-lg bg-amber-500 text-white font-medium text-sm hover:bg-amber-600"
+                      >
+                        Aplicar
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {showDescuentoAlTotal && (
+                  <div className="absolute left-0 top-full mt-2 z-50 w-72 bg-white border border-slate-200 rounded-xl shadow-xl p-4">
+                    <h4 className="font-medium text-slate-800 mb-3">Descuento al total</h4>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        placeholder="% descuento"
+                        value={descuentoTotalInput}
+                        onChange={(e) => setDescuentoTotalInput(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={aplicarDescuentoAlTotal}
+                        className="px-4 py-2 rounded-lg bg-amber-500 text-white font-medium text-sm hover:bg-amber-600"
+                      >
+                        Aplicar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             {showProductPicker && (
               <div className="mt-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
@@ -511,16 +689,29 @@ export function CotizacionEditor({
                 </div>
               </div>
             )}
-            <div className="mt-6 flex justify-end gap-6 text-sm">
-              <span>
-                Total Neto: <strong>{formatPrice(totalNeto)}</strong>
-              </span>
-              <span>
-                IVA ({ivaPorcentaje}%): <strong>{formatPrice(iva)}</strong>
-              </span>
-              <span>
-                Total: <strong>{formatPrice(total)}</strong>
-              </span>
+            <div className="mt-6 flex flex-col items-end gap-2 text-sm">
+              {descuentoTotalPorcentaje > 0 && (
+                <span className="text-amber-600">
+                  Descuento total ({descuentoTotalPorcentaje}%):{" "}
+                  <strong>-{formatPrice(Math.round(subtotalItems * (descuentoTotalPorcentaje / 100)))}</strong>
+                </span>
+              )}
+              <div className="flex gap-6">
+                <span>
+                  Total Neto: <strong>{formatPrice(totalNeto)}</strong>
+                </span>
+                <span>
+                  IVA ({ivaPorcentaje}%): <strong>{formatPrice(iva)}</strong>
+                </span>
+                {despacho.activo && valorDespacho > 0 && (
+                  <span className="text-sky-600">
+                    Despacho: <strong>{formatPrice(valorDespacho)}</strong>
+                  </span>
+                )}
+                <span>
+                  Total: <strong>{formatPrice(total)}</strong>
+                </span>
+              </div>
             </div>
             <div className="mt-2 flex items-center gap-2">
               <label className="text-sm text-slate-600">IVA %:</label>
@@ -534,6 +725,72 @@ export function CotizacionEditor({
                 }
                 className="w-16 px-2 py-1 rounded border border-slate-300"
               />
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Despacho (opcional) */}
+      <section className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="w-full flex items-center justify-between px-6 py-4 bg-slate-50 hover:bg-slate-100 transition">
+          <div className="flex items-center gap-2">
+            <Truck className="w-5 h-5 text-slate-600" />
+            <h2 className="font-semibold text-slate-800">Despacho</h2>
+            <span className="text-sm text-slate-500 font-normal">(opcional)</span>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={despacho.activo}
+              onChange={(e) => setDespacho((d) => ({ ...d, activo: e.target.checked }))}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-slate-200 peer-focus:ring-2 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500" />
+          </label>
+        </div>
+        {despacho.activo && (
+          <div className="p-6 border-t border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Item
+                </label>
+                <input
+                  type="text"
+                  value={despacho.item}
+                  onChange={(e) => setDespacho((d) => ({ ...d, item: e.target.value }))}
+                  placeholder="Ej: Equipos cotizados"
+                  className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Dirección
+                </label>
+                <input
+                  type="text"
+                  value={despacho.direccion}
+                  onChange={(e) => setDespacho((d) => ({ ...d, direccion: e.target.value }))}
+                  placeholder="Dirección de entrega"
+                  className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Valor de despacho $
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={despacho.valor ? formatPrice(despacho.valor) : ""}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, "")
+                    setDespacho((d) => ({ ...d, valor: parseInt(raw, 10) || 0 }))
+                  }}
+                  placeholder="0"
+                  className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
             </div>
           </div>
         )}

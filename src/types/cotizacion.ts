@@ -9,6 +9,15 @@ export interface CotizacionItem {
   descripcion: string
   valorUnit: number
   valorTotal: number
+  /** Descuento en % (0-100) aplicado a este item */
+  descuentoPorcentaje?: number
+}
+
+export interface CotizacionDespacho {
+  activo: boolean
+  item: string
+  direccion: string
+  valor: number
 }
 
 export interface CotizacionCliente {
@@ -38,6 +47,8 @@ export interface Cotizacion {
   ivaPorcentaje: number
   iva: number
   total: number
+  /** Descuento en % (0-100) aplicado al total neto */
+  descuentoTotalPorcentaje?: number
   tasaCambio: string
   validezDiasHabiles: number
   empresa: CotizacionEmpresa
@@ -48,6 +59,7 @@ export interface Cotizacion {
   instruccionesOrdenCompra: string
   observaciones: string
   condicionVenta: string
+  despacho?: CotizacionDespacho
   createdAt?: string
   updatedAt?: string
 }

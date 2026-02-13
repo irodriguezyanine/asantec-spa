@@ -194,6 +194,25 @@ const styles = StyleSheet.create({
   footerSection: {
     marginBottom: 8,
   },
+  despachoBox: {
+    padding: 10,
+    backgroundColor: "#f0f9ff",
+    borderRadius: 4,
+    borderWidth: 0.5,
+    borderColor: "#bae6fd",
+  },
+  despachoTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: "#0369a1",
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
+  despachoText: {
+    fontSize: 9,
+    color: "#334155",
+    marginBottom: 2,
+  },
   footerRef: {
     marginBottom: 6,
   },
@@ -412,6 +431,14 @@ export function CotizacionPdfDocument({
               </Text>
               <Text style={styles.totalValue}>{formatPrice(cotizacion.iva)}</Text>
             </View>
+            {cotizacion.despacho?.activo && cotizacion.despacho.valor > 0 && (
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Despacho $</Text>
+                <Text style={styles.totalValue}>
+                  {formatPrice(cotizacion.despacho.valor)}
+                </Text>
+              </View>
+            )}
             <View style={[styles.totalRow, styles.totalFinal]}>
               <Text style={[styles.totalLabel, styles.totalFinalValue]}>
                 Total $
@@ -425,6 +452,20 @@ export function CotizacionPdfDocument({
 
         {/* Footer */}
         <View style={styles.footer}>
+          {cotizacion.despacho?.activo && (hasValue(cotizacion.despacho.item) || hasValue(cotizacion.despacho.direccion)) && (
+            <View style={[styles.footerSection, styles.despachoBox]}>
+              <Text style={styles.despachoTitle}>DESPACHO</Text>
+              {hasValue(cotizacion.despacho.item) && (
+                <Text style={styles.despachoText}>Item: {cotizacion.despacho.item}</Text>
+              )}
+              {hasValue(cotizacion.despacho.direccion) && (
+                <Text style={styles.despachoText}>Dirección: {cotizacion.despacho.direccion}</Text>
+              )}
+              {cotizacion.despacho.valor > 0 && (
+                <Text style={styles.despachoText}>Valor: {formatPrice(cotizacion.despacho.valor)}</Text>
+              )}
+            </View>
+          )}
           {hasValue(cotizacion.condicionesDespacho) && (
             <View style={styles.footerSection}>
               <Text>{cotizacion.condicionesDespacho}</Text>
