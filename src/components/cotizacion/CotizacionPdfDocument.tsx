@@ -312,7 +312,7 @@ export function CotizacionPdfDocument({
           {items.map((item, idx) => (
             <View
               key={item.id}
-              style={[styles.tableRow, idx % 2 === 1 && styles.tableRowAlt]}
+              style={[styles.tableRow, idx % 2 === 1 ? styles.tableRowAlt : undefined]}
             >
               <Text style={styles.colCantidad}>{item.cantidad}</Text>
               <Text style={styles.colDescripcion}>{item.descripcion}</Text>
