@@ -2,12 +2,23 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { FileText, Plus, Download, Pencil, Trash2 } from "lucide-react"
+import { FileText, Plus } from "lucide-react"
 import type { Cotizacion } from "@/types/cotizacion"
+import {
+  AdminCotizacionTable,
+  type CotizacionSortColumn,
+  type SortDirection,
+} from "@/components/AdminCotizacionTable"
 
 export default function AdminCotizacionesPage() {
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filterCliente, setFilterCliente] = useState("")
+  const [filterFechaDesde, setFilterFechaDesde] = useState("")
+  const [filterFechaHasta, setFilterFechaHasta] = useState("")
+  const [sortColumn, setSortColumn] = useState<CotizacionSortColumn>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
 
   async function loadCotizaciones() {
     const res = await fetch("/api/cotizaciones")
@@ -29,12 +40,11 @@ export default function AdminCotizacionesPage() {
     else alert("Error al eliminar")
   }
 
-  function formatPrice(n: number) {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-      minimumFractionDigits: 0,
-    }).format(n)
+  function handleSort(column: CotizacionSortColumn) {
+    setSortColumn(column)
+    setSortDirection((d) =>
+      sortColumn === column && d === "asc" ? "desc" : "asc"
+    )
   }
 
   if (loading) {
@@ -71,84 +81,22 @@ export default function AdminCotizacionesPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-slate-700">
-                    Nº
-                  </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-slate-700">
-                    Fecha
-                  </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-slate-700">
-                    Cliente
-                  </th>
-                  <th className="text-right px-4 py-3 text-sm font-medium text-slate-700">
-                    Total
-                  </th>
-                  <th className="text-right px-4 py-3 text-sm font-medium text-slate-700 w-40">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {cotizaciones.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="border-b border-slate-100 hover:bg-slate-50/50"
-                  >
-                    <td className="px-4 py-3 font-medium text-slate-800">
-                      {c.numero}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">{c.fecha}</td>
-                    <td className="px-4 py-3">
-                      <span className="font-medium text-slate-800">
-                        {c.cliente.empresa || "—"}
-                      </span>
-                      {c.cliente.contacto && (
-                        <span className="block text-sm text-slate-500">
-                          {c.cliente.contacto}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-800">
-                      {formatPrice(c.total)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <a
-                          href={`/api/cotizaciones/${c.id}/export-pdf`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-sky-600 transition"
-                          title="Descargar PDF"
-                        >
-                          <Download className="w-4 h-4" />
-                        </a>
-                        <Link
-                          href={`/admin/cotizaciones/${c.id}`}
-                          className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-sky-600 transition"
-                          title="Editar"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(c)}
-                          className="p-2 rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-600 transition"
-                          title="Eliminar"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <AdminCotizacionTable
+          cotizaciones={cotizaciones}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filterCliente={filterCliente}
+          onFilterClienteChange={setFilterCliente}
+          filterFechaDesde={filterFechaDesde}
+          filterFechaHasta={filterFechaHasta}
+          onFilterFechaDesdeChange={setFilterFechaDesde}
+          onFilterFechaHastaChange={setFilterFechaHasta}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+          onDelete={handleDelete}
+          emptyMessage="No hay cotizaciones que coincidan con los filtros."
+        />
       )}
 
       <p className="mt-6">

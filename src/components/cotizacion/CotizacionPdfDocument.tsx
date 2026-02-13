@@ -14,37 +14,27 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "Helvetica",
   },
-  // Cabecera con logos
-  headerLogos: {
+  // Cabecera solo ASANTEC
+  header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
     paddingBottom: 12,
     borderBottomWidth: 2,
     borderBottomColor: "#1e3a5f",
   },
   logoAsantec: {
-    width: 140,
-    height: 45,
-    objectFit: "contain",
-  },
-  partnerLogos: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  partnerLogo: {
-    width: 50,
-    height: 28,
+    width: 160,
+    height: 50,
     objectFit: "contain",
   },
   // Título principal
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 14,
     color: "#1e3a5f",
     letterSpacing: 1,
   },
@@ -52,8 +42,8 @@ const styles = StyleSheet.create({
   headerBlock: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
-    paddingBottom: 12,
+    marginBottom: 10,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#cbd5e1",
   },
@@ -61,28 +51,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerRight: {
-    width: 180,
+    width: 170,
     alignItems: "flex-end",
   },
   row: {
     flexDirection: "row",
-    marginBottom: 3,
+    marginBottom: 2,
   },
   label: {
-    width: 85,
+    width: 75,
     fontWeight: "bold",
     color: "#334155",
+    fontSize: 9,
   },
   value: {
     flex: 1,
     color: "#1e293b",
+    fontSize: 9,
   },
   valueRight: {
     textAlign: "right",
     color: "#1e293b",
+    fontSize: 9,
   },
   validityBox: {
-    marginTop: 6,
+    marginTop: 4,
     paddingVertical: 4,
     paddingHorizontal: 8,
     backgroundColor: "#f1f5f9",
@@ -93,6 +86,32 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#475569",
   },
+  // Bloque mensaje cortesía (después de datos)
+  messageBlock: {
+    marginBottom: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "#f8fafc",
+    borderLeftWidth: 4,
+    borderLeftColor: "#1e3a5f",
+    lineHeight: 1.5,
+  },
+  messageText: {
+    fontSize: 9,
+    color: "#334155",
+    marginBottom: 4,
+  },
+  messageSignature: {
+    marginTop: 6,
+    fontSize: 9,
+    fontWeight: "bold",
+    color: "#1e3a5f",
+  },
+  messageContact: {
+    marginTop: 2,
+    fontSize: 8,
+    color: "#64748b",
+  },
   // Tabla
   table: {
     marginTop: 4,
@@ -100,7 +119,7 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#94a3b8",
+    backgroundColor: "#1e3a5f",
     paddingVertical: 8,
     paddingHorizontal: 10,
     fontWeight: "bold",
@@ -125,7 +144,7 @@ const styles = StyleSheet.create({
   totalsWrapper: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    marginBottom: 20,
+    marginBottom: 18,
   },
   totals: {
     width: 220,
@@ -163,8 +182,8 @@ const styles = StyleSheet.create({
   },
   // Footer
   footer: {
-    marginTop: 20,
-    paddingTop: 16,
+    marginTop: 16,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: "#e2e8f0",
     fontSize: 8,
@@ -172,27 +191,13 @@ const styles = StyleSheet.create({
     color: "#475569",
   },
   footerSection: {
-    marginBottom: 10,
-  },
-  footerBold: {
-    fontWeight: "bold",
-    color: "#1e293b",
-    marginBottom: 4,
-    fontSize: 9,
-  },
-  footerRef: {
     marginBottom: 8,
   },
-  footerMessage: {
+  footerRef: {
     marginBottom: 6,
   },
-  footerSignature: {
-    marginTop: 8,
-    fontWeight: "bold",
-    color: "#1e3a5f",
-  },
   footerInstructions: {
-    marginTop: 10,
+    marginTop: 8,
     padding: 8,
     backgroundColor: "#f1f5f9",
     borderRadius: 2,
@@ -202,6 +207,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     fontWeight: "bold",
+    fontSize: 8,
+  },
+  // Logos partners al final (ancho completo de página)
+  partnerLogosSection: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#e2e8f0",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+  },
+  partnerLogoWrapper: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  partnerLogoLarge: {
+    width: 110,
+    height: 45,
+    objectFit: "contain",
   },
 })
 
@@ -216,45 +243,42 @@ export interface CotizacionPdfDocumentProps {
   }
 }
 
+function hasValue(s: string | undefined): boolean {
+  return typeof s === "string" && s.trim().length > 0
+}
+
 export function CotizacionPdfDocument({
   cotizacion,
   logos = {},
 }: CotizacionPdfDocumentProps) {
-  const { cliente, items } = cotizacion
+  const { cliente, empresa, items } = cotizacion
   const formatPrice = (n: number) =>
     n.toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+
+  const partnerLogos = [
+    logos.senegocia,
+    logos.iconstruye,
+    logos.chilecompra,
+    logos.chileproveedores,
+  ].filter(Boolean) as string[]
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Cabecera con logos */}
-        <View style={styles.headerLogos}>
+        {/* Cabecera solo ASANTEC */}
+        <View style={styles.header}>
           {logos.asantec ? (
             <Image src={logos.asantec} style={styles.logoAsantec} />
           ) : (
             <View>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1e3a5f" }}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: "#1e3a5f" }}>
                 ASANTEC
               </Text>
-              <Text style={{ fontSize: 8, color: "#64748b" }}>
+              <Text style={{ fontSize: 9, color: "#64748b" }}>
                 SERVICIO Y TECNOLOGÍA
               </Text>
             </View>
           )}
-          <View style={styles.partnerLogos}>
-            {logos.senegocia && (
-              <Image src={logos.senegocia} style={styles.partnerLogo} />
-            )}
-            {logos.iconstruye && (
-              <Image src={logos.iconstruye} style={styles.partnerLogo} />
-            )}
-            {logos.chilecompra && (
-              <Image src={logos.chilecompra} style={styles.partnerLogo} />
-            )}
-            {logos.chileproveedores && (
-              <Image src={logos.chileproveedores} style={styles.partnerLogo} />
-            )}
-          </View>
         </View>
 
         {/* Título */}
@@ -265,24 +289,36 @@ export function CotizacionPdfDocument({
         {/* Datos cliente + fecha/validez */}
         <View style={styles.headerBlock}>
           <View style={styles.headerLeft}>
-            <View style={styles.row}>
-              <Text style={styles.label}>Empresa:</Text>
-              <Text style={styles.value}>{cliente.empresa || "—"}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Rut:</Text>
-              <Text style={styles.value}>{cliente.rut || "—"}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Contacto:</Text>
-              <Text style={styles.value}>{cliente.contacto || "—"}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Mail - Fono</Text>
-              <Text style={styles.value}>
-                Mail {cliente.mail || "—"} - Celular {cliente.fono || "—"}
-              </Text>
-            </View>
+            {hasValue(cliente.empresa) && (
+              <View style={styles.row}>
+                <Text style={styles.label}>Empresa:</Text>
+                <Text style={styles.value}>{cliente.empresa}</Text>
+              </View>
+            )}
+            {hasValue(cliente.rut) && (
+              <View style={styles.row}>
+                <Text style={styles.label}>Rut:</Text>
+                <Text style={styles.value}>{cliente.rut}</Text>
+              </View>
+            )}
+            {hasValue(cliente.contacto) && (
+              <View style={styles.row}>
+                <Text style={styles.label}>Contacto:</Text>
+                <Text style={styles.value}>{cliente.contacto}</Text>
+              </View>
+            )}
+            {hasValue(cliente.mail) && (
+              <View style={styles.row}>
+                <Text style={styles.label}>Mail:</Text>
+                <Text style={styles.value}>{cliente.mail}</Text>
+              </View>
+            )}
+            {hasValue(cliente.fono) && (
+              <View style={styles.row}>
+                <Text style={styles.label}>Fono:</Text>
+                <Text style={styles.value}>{cliente.fono}</Text>
+              </View>
+            )}
           </View>
           <View style={styles.headerRight}>
             <View style={styles.row}>
@@ -299,6 +335,20 @@ export function CotizacionPdfDocument({
               </Text>
             </View>
           </View>
+        </View>
+
+        {/* Mensaje de cortesía (después de los datos) */}
+        <View style={styles.messageBlock}>
+          <Text style={styles.messageText}>{cotizacion.mensajeCortesia}</Text>
+          <Text style={styles.messageText}>Saluda cordialmente,</Text>
+          <Text style={styles.messageSignature}>{cotizacion.firmaNombre}</Text>
+          {(hasValue(empresa.mail) || hasValue(empresa.fono)) && (
+            <Text style={styles.messageContact}>
+              {hasValue(empresa.mail) && `Mail ${empresa.mail}`}
+              {hasValue(empresa.mail) && hasValue(empresa.fono) && " - "}
+              {hasValue(empresa.fono) && `Celular ${empresa.fono}`}
+            </Text>
+          )}
         </View>
 
         {/* Tabla de items */}
@@ -350,30 +400,37 @@ export function CotizacionPdfDocument({
 
         {/* Footer */}
         <View style={styles.footer}>
-          {cotizacion.condicionesDespacho ? (
+          {hasValue(cotizacion.condicionesDespacho) && (
             <View style={styles.footerSection}>
               <Text>{cotizacion.condicionesDespacho}</Text>
             </View>
-          ) : null}
-          <View style={styles.footerRef}>
-            <Text>REF.: {cotizacion.referencia}</Text>
-          </View>
-          <View style={styles.footerSection}>
-            <Text style={styles.footerBold}>
-              COTIZACIÓN Nº {cotizacion.numero.padStart(5, "0")}
-            </Text>
-            <Text style={styles.footerMessage}>{cotizacion.mensajeCortesia}</Text>
-            <Text>Saluda cordialmente,</Text>
-            <Text style={styles.footerSignature}>{cotizacion.firmaNombre}</Text>
-          </View>
+          )}
+          {hasValue(cotizacion.referencia) && (
+            <View style={styles.footerRef}>
+              <Text>REF.: {cotizacion.referencia}</Text>
+            </View>
+          )}
           <View style={styles.footerInstructions}>
             <Text>{cotizacion.instruccionesOrdenCompra}</Text>
           </View>
           <View style={styles.footerObs}>
-            <Text>OBS.: {cotizacion.observaciones}</Text>
+            {hasValue(cotizacion.observaciones) && (
+              <Text>OBS.: {cotizacion.observaciones}</Text>
+            )}
             <Text>CONDICIÓN DE VENTA: {cotizacion.condicionVenta}</Text>
           </View>
         </View>
+
+        {/* Logos partners al final - ancho completo */}
+        {partnerLogos.length > 0 && (
+          <View style={styles.partnerLogosSection}>
+            {partnerLogos.map((src, i) => (
+              <View key={i} style={styles.partnerLogoWrapper}>
+                <Image src={src} style={styles.partnerLogoLarge} />
+              </View>
+            ))}
+          </View>
+        )}
       </Page>
     </Document>
   )
