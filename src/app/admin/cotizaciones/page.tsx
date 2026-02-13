@@ -83,17 +83,17 @@ export default function AdminCotizacionesPage() {
             onClick={runMigration}
             disabled={migrating || cotizaciones.length === 0}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition disabled:opacity-50"
-            title="Migrar clientes de cotizaciones a base de empresas/contactos"
+            title="Guardar clientes de cotizaciones en base de empresas/contactos"
           >
             <Database className="w-5 h-5" />
-            {migrating ? "Migrando..." : "Migrar clientes"}
+            {migrating ? "Guardando..." : "Guardar clientes"}
           </button>
           <Link
             href="/admin/cotizaciones/configuraciones"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition"
+            className="inline-flex items-center justify-center p-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition"
+            title="Configuraciones"
           >
             <Settings className="w-5 h-5" />
-            Configuraciones de la Cotización
           </Link>
           <Link
             href="/admin/cotizaciones/nueva"
