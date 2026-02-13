@@ -6,7 +6,33 @@ import { ObjectId } from "mongodb"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { CotizacionPdfDocument } from "@/components/cotizacion/CotizacionPdfDocument"
 import React from "react"
+import path from "path"
+import fs from "fs"
 import type { Cotizacion } from "@/types/cotizacion"
+
+function loadLogosAsBase64(): Record<string, string> {
+  const logosDir = path.join(process.cwd(), "public", "logos")
+  const logos: Record<string, string> = {}
+  const files = [
+    { key: "asantec", name: "asantec.png" },
+    { key: "senegocia", name: "senegocia.png" },
+    { key: "iconstruye", name: "iconstruye.png" },
+    { key: "chilecompra", name: "chilecompra.png" },
+    { key: "chileproveedores", name: "chileproveedores.png" },
+  ]
+  for (const { key, name } of files) {
+    const filePath = path.join(logosDir, name)
+    try {
+      if (fs.existsSync(filePath)) {
+        const buffer = fs.readFileSync(filePath)
+        logos[key] = `data:image/png;base64,${buffer.toString("base64")}`
+      }
+    } catch {
+      // Ignorar si no existe
+    }
+  }
+  return logos
+}
 
 function formatCotizacion(doc: Record<string, unknown>): Cotizacion {
   const items = (doc.items as Record<string, unknown>[]) || []
@@ -61,7 +87,11 @@ export async function GET(
     }
 
     const cotizacion = formatCotizacion(doc as Record<string, unknown>)
-    const pdfDoc = React.createElement(CotizacionPdfDocument, { cotizacion })
+    const logos = loadLogosAsBase64()
+    const pdfDoc = React.createElement(CotizacionPdfDocument, {
+      cotizacion,
+      logos,
+    })
     // CotizacionPdfDocument retorna <Document>; assertion para compatibilidad con tipos de @react-pdf
     const buffer = await renderToBuffer(pdfDoc as Parameters<typeof renderToBuffer>[0])
 
