@@ -67,11 +67,13 @@ export async function GET(
 
     const filename = `Cotizacion-${cotizacion.numero}-${cotizacion.cliente.empresa.replace(/\s+/g, "-")}.pdf`
 
-    return new NextResponse(buffer, {
+    // Uint8Array para compatibilidad con BodyInit en NextResponse (Buffer no es BodyInit en tipos)
+    const body = new Uint8Array(buffer)
+    return new NextResponse(body, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Length": String(buffer.length),
+        "Content-Length": String(body.length),
       },
     })
   } catch (error) {
