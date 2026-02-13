@@ -5,11 +5,14 @@ import { getDb } from "@/lib/db"
 import type { NosotrosContent } from "@/types/nosotros"
 import { NOSOTROS_DEFAULTS } from "@/types/nosotros"
 
+const NOSOTROS_KEY = "main"
+
 async function getContent(): Promise<NosotrosContent> {
   const db = await getDb()
-  const doc = await db.collection("nosotros").findOne({ _id: "main" })
+  const doc = await db.collection("nosotros").findOne({ key: NOSOTROS_KEY })
   if (!doc) return NOSOTROS_DEFAULTS
-  return { ...NOSOTROS_DEFAULTS, ...doc } as NosotrosContent
+  const { key: _k, ...rest } = doc as Record<string, unknown>
+  return { ...NOSOTROS_DEFAULTS, ...rest } as NosotrosContent
 }
 
 export async function GET() {
@@ -64,8 +67,8 @@ export async function PUT(request: Request) {
     }
 
     await db.collection("nosotros").updateOne(
-      { _id: "main" },
-      { $set: { ...content, updatedAt: new Date() } },
+      { key: NOSOTROS_KEY },
+      { $set: { ...content, key: NOSOTROS_KEY, updatedAt: new Date() } },
       { upsert: true }
     )
 
