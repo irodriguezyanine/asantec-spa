@@ -6,6 +6,7 @@ import { Plus, Trash2, Download, Save, ChevronDown, ChevronUp, Package } from "l
 import type { Cotizacion, CotizacionItem, CotizacionCliente, CotizacionEmpresa } from "@/types/cotizacion"
 import { EMPRESA_DEFAULT, COTIZACION_DEFAULTS } from "@/types/cotizacion"
 import type { Product } from "@/types/product"
+import { ClienteAutocomplete } from "./ClienteAutocomplete"
 
 interface CotizacionEditorProps {
   cotizacion: Partial<Cotizacion>
@@ -193,75 +194,11 @@ export function CotizacionEditor({
           )}
         </button>
         {showCliente && (
-          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Empresa *
-              </label>
-              <input
-                type="text"
-                value={cliente.empresa}
-                onChange={(e) =>
-                  setCliente((c) => ({ ...c, empresa: e.target.value }))
-                }
-                required
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                RUT
-              </label>
-              <input
-                type="text"
-                value={cliente.rut}
-                onChange={(e) => setCliente((c) => ({ ...c, rut: e.target.value }))}
-                placeholder="12.345.678-9"
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Contacto
-              </label>
-              <input
-                type="text"
-                value={cliente.contacto}
-                onChange={(e) =>
-                  setCliente((c) => ({ ...c, contacto: e.target.value }))
-                }
-                placeholder="Nombre del contacto"
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={cliente.mail}
-                onChange={(e) =>
-                  setCliente((c) => ({ ...c, mail: e.target.value }))
-                }
-                placeholder="email@empresa.cl"
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Teléfono
-              </label>
-              <input
-                type="text"
-                value={cliente.fono}
-                onChange={(e) =>
-                  setCliente((c) => ({ ...c, fono: e.target.value }))
-                }
-                placeholder="+569 1234 5678"
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
+          <div className="p-6">
+            <ClienteAutocomplete
+              value={cliente}
+              onChange={setCliente}
+            />
           </div>
         )}
       </section>

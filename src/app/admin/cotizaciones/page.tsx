@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { FileText, Plus } from "lucide-react"
+import { FileText, Plus, Database, Settings } from "lucide-react"
 import type { Cotizacion } from "@/types/cotizacion"
 import {
   AdminCotizacionTable,
@@ -19,6 +19,7 @@ export default function AdminCotizacionesPage() {
   const [filterFechaHasta, setFilterFechaHasta] = useState("")
   const [sortColumn, setSortColumn] = useState<CotizacionSortColumn>(null)
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+  const [migrating, setMigrating] = useState(false)
 
   async function loadCotizaciones() {
     const res = await fetch("/api/cotizaciones")
@@ -47,6 +48,24 @@ export default function AdminCotizacionesPage() {
     )
   }
 
+  async function runMigration() {
+    if (!confirm("¿Migrar clientes de cotizaciones a la base de empresas/contactos?")) return
+    setMigrating(true)
+    try {
+      const res = await fetch("/api/clientes/migrate", { method: "POST" })
+      const data = await res.json()
+      if (res.ok) {
+        alert(`Migración completada: ${data.empresasCreadas} empresas, ${data.contactosCreados} contactos`)
+      } else {
+        alert(data.error || "Error en migración")
+      }
+    } catch {
+      alert("Error al ejecutar migración")
+    } finally {
+      setMigrating(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12 text-center text-slate-500">
@@ -57,15 +76,33 @@ export default function AdminCotizacionesPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <h1 className="text-2xl font-bold text-slate-800">Cotizaciones</h1>
-        <Link
-          href="/admin/cotizaciones/nueva"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 text-white font-medium hover:bg-sky-700 transition"
-        >
-          <Plus className="w-5 h-5" />
-          Nueva cotización
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={runMigration}
+            disabled={migrating || cotizaciones.length === 0}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition disabled:opacity-50"
+            title="Migrar clientes de cotizaciones a base de empresas/contactos"
+          >
+            <Database className="w-5 h-5" />
+            {migrating ? "Migrando..." : "Migrar clientes"}
+          </button>
+          <Link
+            href="/admin/cotizaciones/configuraciones"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition"
+          >
+            <Settings className="w-5 h-5" />
+            Configuraciones de la Cotización
+          </Link>
+          <Link
+            href="/admin/cotizaciones/nueva"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 text-white font-medium hover:bg-sky-700 transition"
+          >
+            <Plus className="w-5 h-5" />
+            Nueva cotización
+          </Link>
+        </div>
       </div>
 
       {cotizaciones.length === 0 ? (

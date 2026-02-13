@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { getDb } from "@/lib/db"
 import { ObjectId } from "mongodb"
+import { upsertEmpresa, upsertContacto } from "@/lib/clientes"
 import type { Cotizacion } from "@/types/cotizacion"
 
 function formatCotizacion(doc: Record<string, unknown>): Cotizacion {
@@ -97,6 +98,23 @@ export async function PUT(
     const ivaPorcentaje = Number(body.ivaPorcentaje) ?? 19
     const iva = Math.round(totalNeto * (ivaPorcentaje / 100))
     const total = totalNeto + iva
+
+    const cliente = body.cliente || {}
+    if (cliente.empresa?.trim() || cliente.rut?.trim()) {
+      try {
+        const empresaId = await upsertEmpresa(cliente.empresa || "", cliente.rut || "")
+        if (cliente.contacto?.trim()) {
+          await upsertContacto(
+            empresaId,
+            cliente.contacto || "",
+            cliente.mail || "",
+            cliente.fono || ""
+          )
+        }
+      } catch (err) {
+        console.error("Error al guardar empresa/contacto:", err)
+      }
+    }
 
     const update: Record<string, unknown> = {
       numero: body.numero,

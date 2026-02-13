@@ -95,7 +95,12 @@ export async function GET(
     // CotizacionPdfDocument retorna <Document>; assertion para compatibilidad con tipos de @react-pdf
     const buffer = await renderToBuffer(pdfDoc as Parameters<typeof renderToBuffer>[0])
 
-    const filename = `Cotizacion-${cotizacion.numero}-${cotizacion.cliente.empresa.replace(/\s+/g, "-")}.pdf`
+    const [y, m, d] = (cotizacion.fecha || "").split("-")
+    const fechaPart = y && m && d ? `${y.slice(-2)}${m}${d}` : "000000"
+    const empresaPart = (cotizacion.cliente?.empresa || "").trim()
+    const contactoPart = (cotizacion.cliente?.contacto || "").trim()
+    const suffix = [empresaPart, contactoPart].filter(Boolean).join(" ") || "Cliente"
+    const filename = `${fechaPart} Cotización Asantec SPA para ${suffix}.pdf`
 
     // Uint8Array para compatibilidad con BodyInit en NextResponse (Buffer no es BodyInit en tipos)
     const body = new Uint8Array(buffer)

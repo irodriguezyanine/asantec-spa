@@ -89,11 +89,12 @@ const styles = StyleSheet.create({
   // Bloque mensaje cortesía (después de datos)
   messageBlock: {
     marginBottom: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     backgroundColor: "#f8fafc",
     borderLeftWidth: 4,
     borderLeftColor: "#1e3a5f",
+    borderRadius: 2,
     lineHeight: 1.5,
   },
   messageText: {
@@ -197,17 +198,41 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   footerInstructions: {
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: "#f1f5f9",
-    borderRadius: 2,
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: "#f8fafc",
+    borderRadius: 4,
+    borderWidth: 0.5,
+    borderColor: "#e2e8f0",
   },
-  footerObs: {
-    marginTop: 8,
+  obsCondicionRow: {
+    marginTop: 12,
     flexDirection: "row",
-    justifyContent: "space-between",
+    flexWrap: "wrap",
+  },
+  obsCard: {
+    flex: 1,
+    minWidth: 180,
+    marginRight: 12,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: "#f8fafc",
+    borderRadius: 6,
+    borderWidth: 0.5,
+    borderColor: "#e2e8f0",
+  },
+  obsCardLabel: {
+    fontSize: 7,
     fontWeight: "bold",
-    fontSize: 8,
+    color: "#64748b",
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
+  obsCardValue: {
+    fontSize: 9,
+    color: "#334155",
+    lineHeight: 1.3,
   },
   // Logos partners al final (ancho completo de página)
   partnerLogosSection: {
@@ -413,11 +438,17 @@ export function CotizacionPdfDocument({
           <View style={styles.footerInstructions}>
             <Text>{cotizacion.instruccionesOrdenCompra}</Text>
           </View>
-          <View style={styles.footerObs}>
+          <View style={styles.obsCondicionRow}>
             {hasValue(cotizacion.observaciones) && (
-              <Text>OBS.: {cotizacion.observaciones}</Text>
+              <View style={styles.obsCard}>
+                <Text style={styles.obsCardLabel}>OBSERVACIONES</Text>
+                <Text style={styles.obsCardValue}>{cotizacion.observaciones}</Text>
+              </View>
             )}
-            <Text>CONDICIÓN DE VENTA: {cotizacion.condicionVenta}</Text>
+            <View style={styles.obsCard}>
+              <Text style={styles.obsCardLabel}>CONDICIÓN DE VENTA</Text>
+              <Text style={styles.obsCardValue}>{cotizacion.condicionVenta}</Text>
+            </View>
           </View>
         </View>
 
