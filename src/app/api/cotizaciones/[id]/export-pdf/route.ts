@@ -62,7 +62,8 @@ export async function GET(
 
     const cotizacion = formatCotizacion(doc as Record<string, unknown>)
     const pdfDoc = React.createElement(CotizacionPdfDocument, { cotizacion })
-    const buffer = await renderToBuffer(pdfDoc)
+    // CotizacionPdfDocument retorna <Document>; assertion para compatibilidad con tipos de @react-pdf
+    const buffer = await renderToBuffer(pdfDoc as Parameters<typeof renderToBuffer>[0])
 
     const filename = `Cotizacion-${cotizacion.numero}-${cotizacion.cliente.empresa.replace(/\s+/g, "-")}.pdf`
 
