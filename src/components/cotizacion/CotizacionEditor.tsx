@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Download, Save, ChevronDown, ChevronUp, Package, History, Percent, Truck } from "lucide-react"
+import { Plus, Trash2, Download, Save, ChevronDown, ChevronUp, Package, History, Truck } from "lucide-react"
 import type { Cotizacion, CotizacionItem, CotizacionCliente, CotizacionEmpresa, CotizacionDespacho } from "@/types/cotizacion"
 import { EMPRESA_DEFAULT, COTIZACION_DEFAULTS } from "@/types/cotizacion"
 import type { Product } from "@/types/product"
@@ -78,12 +78,6 @@ export function CotizacionEditor({
   const [historialCotizaciones, setHistorialCotizaciones] = useState<Cotizacion[]>([])
   const [loadingHistorial, setLoadingHistorial] = useState(false)
   const [showHistorialDescargas, setShowHistorialDescargas] = useState(false)
-  const [showDescuentoDropdown, setShowDescuentoDropdown] = useState(false)
-  const [showDescuentoAProducto, setShowDescuentoAProducto] = useState(false)
-  const [showDescuentoAlTotal, setShowDescuentoAlTotal] = useState(false)
-  const [descuentoItemId, setDescuentoItemId] = useState<string | null>(null)
-  const [descuentoPorcentajeInput, setDescuentoPorcentajeInput] = useState("")
-  const [descuentoTotalInput, setDescuentoTotalInput] = useState("")
   const [descuentoTotalPorcentaje, setDescuentoTotalPorcentaje] = useState(
     (initial as { descuentoTotalPorcentaje?: number }).descuentoTotalPorcentaje ?? 0
   )
@@ -96,7 +90,6 @@ export function CotizacionEditor({
     }
   )
   const historialRef = useRef<HTMLDivElement>(null)
-  const descuentoRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (showProductPicker) {
@@ -198,41 +191,6 @@ export function CotizacionEditor({
       return () => document.removeEventListener("mousedown", handleClickOutsideHistorial)
     }
   }, [showHistorialDropdown])
-
-  useEffect(() => {
-    function handleClickOutsideDescuento(e: MouseEvent) {
-      if (descuentoRef.current && !descuentoRef.current.contains(e.target as Node)) {
-        setShowDescuentoDropdown(false)
-        setShowDescuentoAProducto(false)
-        setShowDescuentoAlTotal(false)
-      }
-    }
-    if (showDescuentoDropdown || showDescuentoAProducto || showDescuentoAlTotal) {
-      document.addEventListener("mousedown", handleClickOutsideDescuento)
-      return () => document.removeEventListener("mousedown", handleClickOutsideDescuento)
-    }
-  }, [showDescuentoDropdown, showDescuentoAProducto, showDescuentoAlTotal])
-
-  function aplicarDescuentoAProducto() {
-    const pct = parseInt(descuentoPorcentajeInput, 10)
-    if (descuentoItemId && !isNaN(pct) && pct >= 0 && pct <= 100) {
-      updateItem(descuentoItemId, "descuentoPorcentaje", pct)
-      setDescuentoPorcentajeInput("")
-      setDescuentoItemId(null)
-      setShowDescuentoAProducto(false)
-      setShowDescuentoDropdown(false)
-    }
-  }
-
-  function aplicarDescuentoAlTotal() {
-    const pct = parseInt(descuentoTotalInput, 10)
-    if (!isNaN(pct) && pct >= 0 && pct <= 100) {
-      setDescuentoTotalPorcentaje(pct)
-      setDescuentoTotalInput("")
-      setShowDescuentoAlTotal(false)
-      setShowDescuentoDropdown(false)
-    }
-  }
 
   function addProductFromCatalog(p: Product) {
     setItems((prev) => [
@@ -549,101 +507,6 @@ export function CotizacionEditor({
                 <Package className="w-4 h-4" />
                 Agregar desde catálogo
               </button>
-              <div ref={descuentoRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowDescuentoDropdown(!showDescuentoDropdown)}
-                  className="flex items-center gap-2 text-amber-600 hover:text-amber-700 font-medium"
-                >
-                  <Percent className="w-4 h-4" />
-                  Agregar descuento
-                </button>
-                {showDescuentoDropdown && (
-                  <div className="absolute left-0 top-full mt-1 z-50 w-56 bg-white border border-slate-200 rounded-lg shadow-lg py-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowDescuentoDropdown(false)
-                        setShowDescuentoAProducto(true)
-                        setShowDescuentoAlTotal(false)
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm"
-                    >
-                      A un producto
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowDescuentoDropdown(false)
-                        setShowDescuentoAlTotal(true)
-                        setShowDescuentoAProducto(false)
-                        setDescuentoTotalInput(String(descuentoTotalPorcentaje || ""))
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm"
-                    >
-                      Al total
-                    </button>
-                  </div>
-                )}
-                {showDescuentoAProducto && (
-                  <div className="absolute left-0 top-full mt-2 z-50 w-72 bg-white border border-slate-200 rounded-xl shadow-xl p-4">
-                    <h4 className="font-medium text-slate-800 mb-3">Descuento a un producto</h4>
-                    <select
-                      value={descuentoItemId ?? ""}
-                      onChange={(e) => setDescuentoItemId(e.target.value || null)}
-                      className="w-full mb-3 px-3 py-2 rounded-lg border border-slate-300 text-sm"
-                    >
-                      <option value="">Seleccionar item</option>
-                      {items.map((it) => (
-                        <option key={it.id} value={it.id}>
-                          {it.cantidad} {it.descripcion || "Sin descripción"} — ${(it.cantidad * it.valorUnit).toLocaleString("es-CL")}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="% descuento"
-                        value={descuentoPorcentajeInput}
-                        onChange={(e) => setDescuentoPorcentajeInput(e.target.value)}
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={aplicarDescuentoAProducto}
-                        className="px-4 py-2 rounded-lg bg-amber-500 text-white font-medium text-sm hover:bg-amber-600"
-                      >
-                        Aplicar
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {showDescuentoAlTotal && (
-                  <div className="absolute left-0 top-full mt-2 z-50 w-72 bg-white border border-slate-200 rounded-xl shadow-xl p-4">
-                    <h4 className="font-medium text-slate-800 mb-3">Descuento al total</h4>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        placeholder="% descuento"
-                        value={descuentoTotalInput}
-                        onChange={(e) => setDescuentoTotalInput(e.target.value)}
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={aplicarDescuentoAlTotal}
-                        className="px-4 py-2 rounded-lg bg-amber-500 text-white font-medium text-sm hover:bg-amber-600"
-                      >
-                        Aplicar
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
             {showProductPicker && (
               <div className="mt-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
@@ -713,18 +576,35 @@ export function CotizacionEditor({
                 </span>
               </div>
             </div>
-            <div className="mt-2 flex items-center gap-2">
-              <label className="text-sm text-slate-600">IVA %:</label>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={ivaPorcentaje}
-                onChange={(e) =>
-                  setIvaPorcentaje(parseInt(e.target.value, 10) || 0)
-                }
-                className="w-16 px-2 py-1 rounded border border-slate-300"
-              />
+            <div className="mt-2 flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-slate-600">IVA %:</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={ivaPorcentaje}
+                  onChange={(e) =>
+                    setIvaPorcentaje(parseInt(e.target.value, 10) || 0)
+                  }
+                  className="w-16 px-2 py-1 rounded border border-slate-300"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-slate-600">Descuento total %:</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={descuentoTotalPorcentaje || ""}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    setDescuentoTotalPorcentaje(v === "" ? 0 : parseInt(v, 10) || 0)
+                  }}
+                  placeholder="0"
+                  className="w-16 px-2 py-1 rounded border border-slate-300 text-amber-600"
+                />
+              </div>
             </div>
           </div>
         )}

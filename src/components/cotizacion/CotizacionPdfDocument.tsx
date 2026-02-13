@@ -137,10 +137,12 @@ const styles = StyleSheet.create({
   tableRowAlt: {
     backgroundColor: "#f8fafc",
   },
-  colCantidad: { width: "10%", textAlign: "left" },
-  colDescripcion: { width: "55%", textAlign: "left" },
-  colUnit: { width: "17%", textAlign: "right" },
-  colTotal: { width: "18%", textAlign: "right" },
+  colCantidad: { width: "8%", textAlign: "left" },
+  colDescripcion: { width: "48%", textAlign: "left" },
+  colDescripcionWide: { width: "57%", textAlign: "left" },
+  colUnit: { width: "15%", textAlign: "right" },
+  colDesc: { width: "9%", textAlign: "right" },
+  colTotal: { width: "20%", textAlign: "right" },
   // Totales
   totalsWrapper: {
     flexDirection: "row",
@@ -296,6 +298,10 @@ export function CotizacionPdfDocument({
   logos = {},
 }: CotizacionPdfDocumentProps) {
   const { cliente, empresa, items } = cotizacion
+  const hasItemDiscount = items.some((i) => (i.descuentoPorcentaje ?? 0) > 0)
+  const hasDescuentoTotal = (cotizacion.descuentoTotalPorcentaje ?? 0) > 0
+  const hasDespacho =
+    cotizacion.despacho?.activo && (cotizacion.despacho.valor ?? 0) > 0
   const formatPrice = (n: number) =>
     n.toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
@@ -399,8 +405,11 @@ export function CotizacionPdfDocument({
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={styles.colCantidad}>Cantidad</Text>
-            <Text style={styles.colDescripcion}>Descripción</Text>
+            <Text style={hasItemDiscount ? styles.colDescripcion : styles.colDescripcionWide}>
+              Descripción
+            </Text>
             <Text style={styles.colUnit}>Valor Unit. $</Text>
+            {hasItemDiscount && <Text style={styles.colDesc}>Desc. %</Text>}
             <Text style={styles.colTotal}>Valor Total $</Text>
           </View>
           {items.map((item, idx) => (
@@ -409,8 +418,15 @@ export function CotizacionPdfDocument({
               style={[styles.tableRow, idx % 2 === 1 ? styles.tableRowAlt : {}]}
             >
               <Text style={styles.colCantidad}>{item.cantidad}</Text>
-              <Text style={styles.colDescripcion}>{item.descripcion}</Text>
+              <Text style={hasItemDiscount ? styles.colDescripcion : styles.colDescripcionWide}>
+                {item.descripcion}
+              </Text>
               <Text style={styles.colUnit}>{formatPrice(item.valorUnit)}</Text>
+              {hasItemDiscount && (
+                <Text style={styles.colDesc}>
+                  {item.descuentoPorcentaje ? `${item.descuentoPorcentaje}%` : "—"}
+                </Text>
+              )}
               <Text style={styles.colTotal}>{formatPrice(item.valorTotal)}</Text>
             </View>
           ))}
@@ -419,6 +435,22 @@ export function CotizacionPdfDocument({
         {/* Totales */}
         <View style={styles.totalsWrapper}>
           <View style={styles.totals}>
+            {hasDescuentoTotal && (
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>
+                  Descuento total ({cotizacion.descuentoTotalPorcentaje}%)
+                </Text>
+                <Text style={[styles.totalValue, { color: "#b45309" }]}>
+                  -{formatPrice(
+                    Math.round(
+                      cotizacion.totalNeto *
+                        (cotizacion.descuentoTotalPorcentaje! / 100) /
+                        (1 - cotizacion.descuentoTotalPorcentaje! / 100)
+                    )
+                  )}
+                </Text>
+              </View>
+            )}
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total Neto $</Text>
               <Text style={styles.totalValue}>
@@ -431,11 +463,11 @@ export function CotizacionPdfDocument({
               </Text>
               <Text style={styles.totalValue}>{formatPrice(cotizacion.iva)}</Text>
             </View>
-            {cotizacion.despacho?.activo && cotizacion.despacho.valor > 0 && (
+            {hasDespacho && (
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Despacho $</Text>
                 <Text style={styles.totalValue}>
-                  {formatPrice(cotizacion.despacho.valor)}
+                  {formatPrice(cotizacion.despacho!.valor)}
                 </Text>
               </View>
             )}
@@ -452,17 +484,20 @@ export function CotizacionPdfDocument({
 
         {/* Footer */}
         <View style={styles.footer}>
-          {cotizacion.despacho?.activo && (hasValue(cotizacion.despacho.item) || hasValue(cotizacion.despacho.direccion)) && (
+          {cotizacion.despacho?.activo &&
+            (hasValue(cotizacion.despacho.item) ||
+              hasValue(cotizacion.despacho.direccion) ||
+              (cotizacion.despacho.valor ?? 0) > 0) && (
             <View style={[styles.footerSection, styles.despachoBox]}>
               <Text style={styles.despachoTitle}>DESPACHO</Text>
-              {hasValue(cotizacion.despacho.item) && (
-                <Text style={styles.despachoText}>Item: {cotizacion.despacho.item}</Text>
+              {hasValue(cotizacion.despacho!.item) && (
+                <Text style={styles.despachoText}>Item: {cotizacion.despacho!.item}</Text>
               )}
-              {hasValue(cotizacion.despacho.direccion) && (
-                <Text style={styles.despachoText}>Dirección: {cotizacion.despacho.direccion}</Text>
+              {hasValue(cotizacion.despacho!.direccion) && (
+                <Text style={styles.despachoText}>Dirección: {cotizacion.despacho!.direccion}</Text>
               )}
-              {cotizacion.despacho.valor > 0 && (
-                <Text style={styles.despachoText}>Valor: {formatPrice(cotizacion.despacho.valor)}</Text>
+              {(cotizacion.despacho!.valor ?? 0) > 0 && (
+                <Text style={styles.despachoText}>Valor: {formatPrice(cotizacion.despacho!.valor)}</Text>
               )}
             </View>
           )}

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { createPortal } from "react-dom"
 import { X, Download, FileText } from "lucide-react"
 
 interface CotizacionItemSnapshot {
@@ -56,6 +57,15 @@ export function HistorialDescargasModal({
 }: HistorialDescargasModalProps) {
   const [descargas, setDescargas] = useState<Descarga[]>([])
   const [loading, setLoading] = useState(true)
+  const [hoveredDescarga, setHoveredDescarga] = useState<Descarga | null>(null)
+  const [popoverRect, setPopoverRect] = useState<{ top: number; left: number } | null>(null)
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -118,41 +128,25 @@ export function HistorialDescargasModal({
                       {formatFechaHora(d.fechaDescarga)}
                     </span>
                     <span className="text-slate-400">—</span>
-                    <span className="relative group">
+                    <span
+                      className="relative"
+                      onMouseEnter={(e) => {
+                        if ((d.items?.length ?? 0) > 0) {
+                          const rect = e.currentTarget.getBoundingClientRect()
+                          setPopoverRect({ top: rect.bottom + 4, left: rect.left })
+                          setHoveredDescarga(d)
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        closeTimeoutRef.current = setTimeout(() => {
+                          setHoveredDescarga(null)
+                          setPopoverRect(null)
+                        }, 100)
+                      }}
+                    >
                       <span className="text-sm text-slate-800 font-medium cursor-help underline decoration-dotted decoration-slate-400 underline-offset-2">
                         {getPrimerItemTexto(d.items)}
                       </span>
-                      {(d.items?.length ?? 0) > 0 && (
-                        <div className="absolute left-0 top-full pt-2 z-[60] hidden group-hover:block w-[min(90vw,400px)]">
-                          <div className="bg-white border border-slate-200 rounded-lg shadow-xl p-3 text-left">
-                            <p className="text-xs font-semibold text-slate-600 mb-2 pb-1 border-b border-slate-100">
-                              Vista previa de items
-                            </p>
-                            <div className="max-h-48 overflow-y-auto">
-                              <table className="w-full text-xs">
-                                <thead>
-                                  <tr className="text-slate-500 border-b border-slate-100">
-                                    <th className="text-left py-1 pr-2 w-10">Cant.</th>
-                                    <th className="text-left py-1 pr-2">Descripción</th>
-                                    <th className="text-right py-1">Precio</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {(d.items || []).map((item, idx) => (
-                                    <tr key={idx} className="border-b border-slate-50">
-                                      <td className="py-1.5 pr-2">{item.cantidad}</td>
-                                      <td className="py-1.5 pr-2">{item.descripcion || "—"}</td>
-                                      <td className="py-1.5 text-right font-medium">
-                                        {formatPrice(item.valorUnit)}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </span>
                   </div>
                   <a
@@ -177,6 +171,57 @@ export function HistorialDescargasModal({
           </p>
         </div>
       </div>
+
+      {/* Popover renderizado fuera del modal para que no se recorte */}
+      {typeof document !== "undefined" &&
+        hoveredDescarga &&
+        popoverRect &&
+        (hoveredDescarga.items?.length ?? 0) > 0 &&
+        createPortal(
+          <div
+            className="fixed z-[100] w-[min(90vw,400px)]"
+            style={{ top: popoverRect.top, left: popoverRect.left }}
+            onMouseEnter={() => {
+              if (closeTimeoutRef.current) {
+                clearTimeout(closeTimeoutRef.current)
+                closeTimeoutRef.current = null
+              }
+            }}
+            onMouseLeave={() => {
+              setHoveredDescarga(null)
+              setPopoverRect(null)
+            }}
+          >
+            <div className="bg-white border border-slate-200 rounded-lg shadow-xl p-3 text-left">
+              <p className="text-xs font-semibold text-slate-600 mb-2 pb-1 border-b border-slate-100">
+                Vista previa de items
+              </p>
+              <div className="max-h-48 overflow-y-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-slate-500 border-b border-slate-100">
+                      <th className="text-left py-1 pr-2 w-10">Cant.</th>
+                      <th className="text-left py-1 pr-2">Descripción</th>
+                      <th className="text-right py-1">Precio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(hoveredDescarga.items || []).map((item, idx) => (
+                      <tr key={idx} className="border-b border-slate-50">
+                        <td className="py-1.5 pr-2">{item.cantidad}</td>
+                        <td className="py-1.5 pr-2">{item.descripcion || "—"}</td>
+                        <td className="py-1.5 text-right font-medium">
+                          {formatPrice(item.valorUnit)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   )
 }
