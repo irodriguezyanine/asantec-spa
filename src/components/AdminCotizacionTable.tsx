@@ -90,13 +90,20 @@ export function AdminCotizacionTable({
 
   const filtered = cotizaciones.filter((c) => {
     const q = searchQuery.toLowerCase().trim()
-    const matchSearch =
-      !q ||
-      (c.numero && c.numero.toLowerCase().includes(q)) ||
-      (c.cliente?.empresa &&
-        c.cliente.empresa.toLowerCase().includes(q)) ||
-      (c.cliente?.contacto &&
-        c.cliente.contacto.toLowerCase().includes(q))
+    const searchableText = [
+      c.numero,
+      c.fecha,
+      c.cliente?.empresa,
+      c.cliente?.contacto,
+      c.cliente?.rut,
+      c.cliente?.mail,
+      c.cliente?.fono,
+      String(c.total ?? ""),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+    const matchSearch = !q || searchableText.includes(q)
     const matchCliente =
       !filterCliente || c.cliente?.empresa === filterCliente
     const matchFechaDesde =
@@ -131,7 +138,7 @@ export function AdminCotizacionTable({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="search"
-              placeholder="Buscar por número de cotización, cliente, contacto..."
+              placeholder="Buscar en todas las columnas..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500"

@@ -10,23 +10,24 @@ import type { Cotizacion } from "@/types/cotizacion"
 
 const styles = StyleSheet.create({
   page: {
-    padding: 36,
+    padding: 28,
+    paddingTop: 20,
     fontSize: 9,
     fontFamily: "Helvetica",
   },
-  // Cabecera solo ASANTEC
+  // Cabecera solo ASANTEC - margen superior reducido
   header: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 12,
+    marginBottom: 8,
+    paddingBottom: 8,
     borderBottomWidth: 2,
     borderBottomColor: "#1e3a5f",
   },
   logoAsantec: {
-    width: 160,
-    height: 50,
+    width: 140,
+    height: 44,
     objectFit: "contain",
   },
   // Título principal
@@ -34,7 +35,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 14,
+    marginBottom: 8,
     color: "#1e3a5f",
     letterSpacing: 1,
   },
@@ -42,8 +43,8 @@ const styles = StyleSheet.create({
   headerBlock: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10,
-    paddingBottom: 10,
+    marginBottom: 6,
+    paddingBottom: 6,
     borderBottomWidth: 1,
     borderBottomColor: "#cbd5e1",
   },
@@ -88,14 +89,14 @@ const styles = StyleSheet.create({
   },
   // Bloque mensaje cortesía (después de datos)
   messageBlock: {
-    marginBottom: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    marginBottom: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     backgroundColor: "#f8fafc",
     borderLeftWidth: 4,
     borderLeftColor: "#1e3a5f",
     borderRadius: 2,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
   },
   messageText: {
     fontSize: 9,
@@ -115,13 +116,13 @@ const styles = StyleSheet.create({
   },
   // Tabla
   table: {
-    marginTop: 4,
-    marginBottom: 12,
+    marginTop: 2,
+    marginBottom: 8,
   },
   tableHeader: {
     flexDirection: "row",
     backgroundColor: "#1e3a5f",
-    paddingVertical: 8,
+    paddingVertical: 5,
     paddingHorizontal: 10,
     fontWeight: "bold",
     fontSize: 10,
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: "row",
-    paddingVertical: 8,
+    paddingVertical: 5,
     paddingHorizontal: 10,
     borderBottomWidth: 0.5,
     borderBottomColor: "#e2e8f0",
@@ -143,18 +144,18 @@ const styles = StyleSheet.create({
   colUnit: { width: "15%", textAlign: "right" },
   colDesc: { width: "9%", textAlign: "right" },
   colTotal: { width: "20%", textAlign: "right" },
-  // Totales
+  // Totales - espacio reducido entre total y despacho
   totalsWrapper: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    marginBottom: 18,
+    marginBottom: 10,
   },
   totals: {
     width: 220,
     borderWidth: 1,
     borderColor: "#cbd5e1",
     borderRadius: 4,
-    padding: 12,
+    padding: 10,
     backgroundColor: "#f8fafc",
   },
   totalRow: {
@@ -183,21 +184,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#1e3a5f",
   },
-  // Footer
+  // Footer - espaciado reducido
   footer: {
-    marginTop: 16,
-    paddingTop: 12,
+    marginTop: 8,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: "#e2e8f0",
     fontSize: 8,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
     color: "#475569",
   },
   footerSection: {
-    marginBottom: 8,
+    marginBottom: 4,
   },
   despachoBox: {
-    padding: 10,
+    padding: 6,
     backgroundColor: "#f0f9ff",
     borderRadius: 4,
     borderWidth: 0.5,
@@ -216,18 +217,18 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   footerRef: {
-    marginBottom: 6,
+    marginBottom: 4,
   },
   footerInstructions: {
-    marginTop: 10,
-    padding: 12,
+    marginTop: 6,
+    padding: 8,
     backgroundColor: "#f8fafc",
     borderRadius: 4,
     borderWidth: 0.5,
     borderColor: "#e2e8f0",
   },
   obsCondicionRow: {
-    marginTop: 12,
+    marginTop: 6,
     flexDirection: "row",
     flexWrap: "wrap",
   },
@@ -235,9 +236,9 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 180,
     marginRight: 12,
-    marginBottom: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    marginBottom: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     backgroundColor: "#f8fafc",
     borderRadius: 6,
     borderWidth: 0.5,
@@ -255,10 +256,10 @@ const styles = StyleSheet.create({
     color: "#334155",
     lineHeight: 1.3,
   },
-  // Logos partners al final (ancho completo de página)
+  // Logos partners al final - espacio reducido para caber en una página
   partnerLogosSection: {
-    marginTop: 20,
-    paddingTop: 16,
+    marginTop: 8,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: "#e2e8f0",
     flexDirection: "row",
@@ -272,8 +273,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   partnerLogoLarge: {
-    width: 110,
-    height: 45,
+    width: 100,
+    height: 40,
     objectFit: "contain",
   },
 })

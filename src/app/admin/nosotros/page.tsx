@@ -32,14 +32,21 @@ export default function AdminNosotrosPage() {
     setSaving(true)
     try {
       const res = await fetch("/api/nosotros", {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(content),
+        credentials: "same-origin",
       })
-      if (!res.ok) throw new Error("Error al guardar")
+      let data: { error?: string } = {}
+      try {
+        data = await res.json()
+      } catch {
+        // Respuesta no JSON (ej. 405)
+      }
+      if (!res.ok) throw new Error(data.error || `Error al guardar (${res.status})`)
       alert("Contenido guardado correctamente.")
-    } catch {
-      alert("Error al guardar. Intente de nuevo.")
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error al guardar. Intente de nuevo.")
     } finally {
       setSaving(false)
     }

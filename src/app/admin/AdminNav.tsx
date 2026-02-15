@@ -4,18 +4,20 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
 import { signOut } from "next-auth/react"
-import { Menu, X, ChevronDown, Home, Package, FolderTree, Search, BarChart3, LogOut, FileText, Users, UserCircle } from "lucide-react"
+import { Menu, X, ChevronDown, Home, Package, FolderTree, Search, BarChart3, LogOut, FileText, Users, UserCircle, UserPlus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/admin/perfil", label: "Editar Perfil", icon: UserCircle },
   { href: "/admin", label: "Inicio", icon: Home },
   { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText },
+  { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/inventario", label: "Inventario", icon: FolderTree },
   { href: "/admin/productos", label: "Productos", icon: Package },
   { href: "/admin/seo", label: "SEO", icon: Search },
   { href: "/admin/analytics", label: "Analíticas", icon: BarChart3 },
   { href: "/admin/nosotros", label: "Editar Nosotros", icon: Users },
+  { href: "/admin/usuarios/nuevo", label: "Crear nuevo perfil", icon: UserPlus },
 ]
 
 export function AdminNav() {

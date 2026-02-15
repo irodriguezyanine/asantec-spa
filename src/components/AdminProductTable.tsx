@@ -74,11 +74,22 @@ export function AdminProductTable({
   emptyMessage = "No hay productos.",
 }: AdminProductTableProps) {
   const filtered = products.filter((p) => {
-    const matchSearch =
-      !searchQuery.trim() ||
-      [p.name, p.brand, p.category, p.description].some((v) =>
-        String(v || "").toLowerCase().includes(searchQuery.toLowerCase().trim())
-      )
+    const q = searchQuery.toLowerCase().trim()
+    const searchableText = [
+      p.name,
+      p.slug,
+      p.brand,
+      p.category,
+      p.categorySlug,
+      p.description,
+      p.priceFormatted,
+      String(p.price ?? ""),
+      p.image,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+    const matchSearch = !q || searchableText.includes(q)
     const matchCategory = !filterCategory || p.categorySlug === filterCategory
     return matchSearch && matchCategory
   })
@@ -103,7 +114,7 @@ export function AdminProductTable({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="search"
-            placeholder="Buscar por nombre, marca, categoría..."
+            placeholder="Buscar en todas las columnas..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500"

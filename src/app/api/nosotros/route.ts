@@ -5,6 +5,8 @@ import { getDb } from "@/lib/db"
 import type { NosotrosContent } from "@/types/nosotros"
 import { NOSOTROS_DEFAULTS } from "@/types/nosotros"
 
+export const dynamic = "force-dynamic"
+
 const NOSOTROS_KEY = "main"
 
 async function getContent(): Promise<NosotrosContent> {
@@ -25,7 +27,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: Request) {
+async function handleSave(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -77,4 +79,12 @@ export async function PUT(request: Request) {
     console.error("Error al guardar Nosotros:", error)
     return NextResponse.json({ error: "Error al guardar" }, { status: 500 })
   }
+}
+
+export async function PUT(request: Request) {
+  return handleSave(request)
+}
+
+export async function POST(request: Request) {
+  return handleSave(request)
 }
