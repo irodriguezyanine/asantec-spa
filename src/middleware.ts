@@ -19,6 +19,12 @@ export async function middleware(request: NextRequest) {
       url.searchParams.set("callbackUrl", pathname)
       return NextResponse.redirect(url)
     }
+    if (pathname === "/admin/usuarios" || pathname.startsWith("/admin/usuarios/")) {
+      const canManage = (token as { canManageUsers?: boolean }).canManageUsers
+      if (canManage === false) {
+        return NextResponse.redirect(new URL("/admin", request.url))
+      }
+    }
   }
 
   return NextResponse.next()

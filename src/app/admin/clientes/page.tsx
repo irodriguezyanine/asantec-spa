@@ -61,13 +61,14 @@ export default function AdminClientesPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <h1 className="text-2xl font-bold text-slate-800">Clientes</h1>
-        <Link
-          href="/admin/cotizaciones/nueva"
+        <button
+          type="button"
+          onClick={openAddForm}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 text-white font-medium hover:bg-sky-700 transition"
         >
           <Plus className="w-5 h-5" />
           Agregar nuevo cliente
-        </Link>
+        </button>
       </div>
 
       {clientes.length === 0 ? (
@@ -93,17 +94,7 @@ export default function AdminClientesPage() {
           </div>
         </div>
       ) : (
-        <>
-          <div className="mb-4 flex justify-end">
-            <button
-              onClick={openAddForm}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition"
-            >
-              <Plus className="w-4 h-4" />
-              Agregar cliente
-            </button>
-          </div>
-          <AdminClientesTable
+        <AdminClientesTable
             clientes={clientes}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -113,7 +104,6 @@ export default function AdminClientesPage() {
             onEdit={openEditForm}
             emptyMessage="No hay clientes que coincidan con los filtros."
           />
-        </>
       )}
 
       {showForm && (

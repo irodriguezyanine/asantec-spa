@@ -3,11 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { Menu, X, ChevronDown, Home, Package, FolderTree, Search, BarChart3, LogOut, FileText, Users, UserCircle, UserPlus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const navItems = [
+const navItemsBase = [
   { href: "/admin/perfil", label: "Editar Perfil", icon: UserCircle },
   { href: "/admin", label: "Inicio", icon: Home },
   { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText },
@@ -17,10 +17,13 @@ const navItems = [
   { href: "/admin/seo", label: "SEO", icon: Search },
   { href: "/admin/analytics", label: "Analíticas", icon: BarChart3 },
   { href: "/admin/nosotros", label: "Editar Nosotros", icon: Users },
-  { href: "/admin/usuarios/nuevo", label: "Crear nuevo perfil", icon: UserPlus },
 ]
+const navItemUsuarios = { href: "/admin/usuarios", label: "Usuarios", icon: UserPlus }
 
 export function AdminNav() {
+  const { data: session } = useSession()
+  const canManageUsers = (session?.user as { canManageUsers?: boolean })?.canManageUsers
+  const navItems = [...navItemsBase, ...(canManageUsers ? [navItemUsuarios] : [])]
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)

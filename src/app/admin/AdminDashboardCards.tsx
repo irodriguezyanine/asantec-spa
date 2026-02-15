@@ -1,10 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { FolderTree, FileText, BarChart3, Users, LogOut, UserPlus } from "lucide-react"
 
 export function AdminDashboardCards() {
+  const { data: session } = useSession()
+  const canManageUsers = (session?.user as { canManageUsers?: boolean })?.canManageUsers
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <Link
@@ -62,16 +64,18 @@ export function AdminDashboardCards() {
         </p>
       </Link>
 
-      <Link
-        href="/admin/usuarios/nuevo"
-        className="block p-6 rounded-xl bg-white border border-slate-200 hover:border-sky-300 hover:shadow-md transition"
-      >
-        <UserPlus className="w-8 h-8 text-sky-600" />
-        <h2 className="font-semibold text-slate-800 mt-2">Crear nuevo perfil</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Crear nuevos perfiles de administrador con acceso completo al panel.
-        </p>
-      </Link>
+      {canManageUsers && (
+        <Link
+          href="/admin/usuarios"
+          className="block p-6 rounded-xl bg-white border border-slate-200 hover:border-sky-300 hover:shadow-md transition"
+        >
+          <UserPlus className="w-8 h-8 text-sky-600" />
+          <h2 className="font-semibold text-slate-800 mt-2">Usuarios</h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Gestionar usuarios. Crear, editar y cambiar atribuciones.
+          </p>
+        </Link>
+      )}
 
       <button
         type="button"

@@ -38,6 +38,7 @@ async function seed() {
         telefono: "",
         cargo: "Administrador",
         role: "admin",
+        canManageUsers: true,
         createdAt: new Date(),
       })
     } else {
@@ -52,6 +53,9 @@ async function seed() {
         updates.rut = ""
         updates.telefono = ""
         updates.cargo = "Administrador"
+      }
+      if ((existingAdmin as { canManageUsers?: boolean }).canManageUsers !== true) {
+        updates.canManageUsers = true
       }
       if (Object.keys(updates).length > 0) {
         await usersCollection.updateOne(

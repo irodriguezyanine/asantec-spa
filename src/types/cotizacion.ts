@@ -50,6 +50,8 @@ export interface Cotizacion {
   /** Descuento en % (0-100) aplicado al total neto */
   descuentoTotalPorcentaje?: number
   tasaCambio: string
+  /** Si true, muestra el tipo de cambio en la cotización (cotización en dólares) */
+  mostrarTipoCambio?: boolean
   validezDiasHabiles: number
   empresa: CotizacionEmpresa
   condicionesDespacho: string

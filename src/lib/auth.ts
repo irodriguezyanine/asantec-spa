@@ -44,18 +44,38 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.name = user.name ?? undefined
+        try {
+          const db = await getDb()
+          const dbUser = await db.collection("users").findOne({ _id: new ObjectId(user.id) })
+          if (dbUser) {
+            const u = dbUser as { canManageUsers?: boolean; username?: string }
+            token.canManageUsers = u.canManageUsers === true || u.username === "jorgeignaciorb@gmail.com"
+          }
+        } catch {
+          // ignore
+        }
       }
       return token
     },
     async session({ session, token }) {
       if (session.user && token.id) {
         (session.user as { id?: string }).id = token.id
+        ;(session.user as { canManageUsers?: boolean }).canManageUsers =
+          (token.canManageUsers as boolean) === true
         try {
           const db = await getDb()
           const user = await db.collection("users").findOne({ _id: new ObjectId(token.id) })
-          const displayName = (user as { displayName?: string } | null)?.displayName
-          if (displayName?.trim()) session.user.name = displayName.trim()
-          else if (token.name) session.user.name = token.name as string
+          if (user) {
+            const u = user as { displayName?: string; username?: string; canManageUsers?: boolean }
+            const displayName = u.displayName?.trim()
+            if (displayName) session.user.name = displayName
+            else if (token.name) session.user.name = token.name as string
+            if (u.username) (session.user as { email?: string }).email = u.username
+            ;(session.user as { canManageUsers?: boolean }).canManageUsers =
+              u.canManageUsers === true || u.username === "jorgeignaciorb@gmail.com"
+          } else if (token.name) {
+            session.user.name = token.name as string
+          }
         } catch {
           if (token.name) session.user.name = token.name as string
         }

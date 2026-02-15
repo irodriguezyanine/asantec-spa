@@ -376,10 +376,12 @@ export function CotizacionPdfDocument({
               <Text style={styles.label}>Fecha:</Text>
               <Text style={styles.valueRight}>{cotizacion.fecha}</Text>
             </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Tasa de cambio:</Text>
-              <Text style={styles.valueRight}>{cotizacion.tasaCambio}</Text>
-            </View>
+            {cotizacion.mostrarTipoCambio && (
+              <View style={styles.row}>
+                <Text style={styles.label}>Tasa de cambio:</Text>
+                <Text style={styles.valueRight}>{cotizacion.tasaCambio}</Text>
+              </View>
+            )}
             <View style={styles.validityBox}>
               <Text style={styles.validityText}>
                 Cotización válida por {cotizacion.validezDiasHabiles} días hábiles

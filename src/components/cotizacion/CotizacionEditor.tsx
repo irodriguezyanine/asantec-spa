@@ -38,6 +38,9 @@ export function CotizacionEditor({
   )
   const [ivaPorcentaje, setIvaPorcentaje] = useState(initial.ivaPorcentaje ?? 19)
   const [tasaCambio, setTasaCambio] = useState(initial.tasaCambio ?? "US$-")
+  const [mostrarTipoCambio, setMostrarTipoCambio] = useState(
+    (initial as { mostrarTipoCambio?: boolean }).mostrarTipoCambio ?? false
+  )
   const [validezDiasHabiles, setValidezDiasHabiles] = useState(
     initial.validezDiasHabiles ?? 2
   )
@@ -235,6 +238,7 @@ export function CotizacionEditor({
         descuentoTotalPorcentaje: descuentoTotalPorcentaje || undefined,
         despacho: despacho.activo ? despacho : undefined,
         tasaCambio,
+        mostrarTipoCambio,
         validezDiasHabiles,
         empresa,
         condicionesDespacho,
@@ -357,18 +361,33 @@ export function CotizacionEditor({
               className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Tasa de cambio
+          <div className="flex items-end gap-3">
+            <label className="flex items-center gap-2 cursor-pointer pb-2">
+              <input
+                type="checkbox"
+                checked={mostrarTipoCambio}
+                onChange={(e) => setMostrarTipoCambio(e.target.checked)}
+                className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              />
+              <span className="text-sm font-medium text-slate-700">
+                Mostrar cotización en dólares (tipo de cambio)
+              </span>
             </label>
-            <input
-              type="text"
-              value={tasaCambio}
-              onChange={(e) => setTasaCambio(e.target.value)}
-              placeholder="US$-"
-              className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
-            />
           </div>
+          {mostrarTipoCambio && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Tasa de cambio
+              </label>
+              <input
+                type="text"
+                value={tasaCambio}
+                onChange={(e) => setTasaCambio(e.target.value)}
+                placeholder="US$-"
+                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Válida por (días hábiles)

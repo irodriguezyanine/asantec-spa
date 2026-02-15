@@ -27,6 +27,7 @@ function formatCotizacion(doc: Record<string, unknown>): Cotizacion {
     descuentoTotalPorcentaje: doc.descuentoTotalPorcentaje as number | undefined,
     despacho: doc.despacho as Cotizacion["despacho"],
     tasaCambio: doc.tasaCambio as string,
+    mostrarTipoCambio: (doc.mostrarTipoCambio as boolean) === true,
     validezDiasHabiles: doc.validezDiasHabiles as number,
     empresa: doc.empresa as Cotizacion["empresa"],
     condicionesDespacho: doc.condicionesDespacho as string,
@@ -158,6 +159,7 @@ export async function POST(request: Request) {
       descuentoTotalPorcentaje: body.descuentoTotalPorcentaje,
       despacho: body.despacho,
       tasaCambio: body.tasaCambio ?? "US$-",
+      mostrarTipoCambio: body.mostrarTipoCambio === true,
       validezDiasHabiles: body.validezDiasHabiles ?? 2,
       empresa: body.empresa || {
         nombre: "ASANTEC SPA",
