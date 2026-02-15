@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useSession, useRouter } from "next-auth/react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Users, Plus, X, UserPlus, Eye, EyeOff } from "lucide-react"
 import type { UsuarioAdmin } from "@/app/api/admin/usuarios/route"
 import {
